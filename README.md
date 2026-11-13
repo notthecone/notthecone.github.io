@@ -31,10 +31,9 @@ Buy a domain (Cloudflare or Namecheap), then in **Settings → Pages → Custom 
 
 - `index.html`: the whole site (layout, styles, die, all four pages)
 - `data2.js`: every photo's title, date, place, camera settings and category
-- `img/`: photography, `art/`: shoe projects and the 3D WaveRunner model (`waverunner-model.js`, plus the raw `waverunner.glb`)
+- `img/`: photography, `proj/`: project graphics, `art/`: shoe projects and the 3D WaveRunner model (`waverunner-model.js`, plus the raw `waverunner.glb`)
 - `lib/`: three.js add-ons for the 3D viewer (three.js itself loads from cdnjs)
 
 ## To add later
 
 - Resume PDF: drop it in as `resume.pdf` and add a link in the "Say hi" section of About
-- Hurricane Season bot results
