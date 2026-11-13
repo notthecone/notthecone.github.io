@@ -121,6 +121,7 @@ html.cdesk #f-photo .fhead{z-index:70}
 .honors b{font-weight:400}
 .honors span{color:var(--mute);font-size:13px;text-align:right}
 .links{display:flex;flex-wrap:wrap;gap:12px 28px;font-size:15px;padding-top:4px}
+.links a{color:var(--fg);text-decoration:none;border-bottom:1px solid var(--dim);padding-bottom:2px;transition:color .25s,border-color .25s}.links a:hover{color:var(--accent);border-color:var(--accent)}
 .todo{color:var(--dim);font:12px 'IBM Plex Mono',monospace}
 .proj{padding:44px 0 56px;border-top:1px solid var(--line)}
 .ph-head{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:end;margin-bottom:28px}
@@ -251,7 +252,7 @@ blockquote cite{display:block;margin-top:10px;font:normal 12px 'IBM Plex Mono',m
 .chip:hover{border-color:var(--fg)}
 .chip i{font-style:normal;color:var(--accent)}
 #err{position:fixed;inset:0;display:none;align-items:center;justify-content:center;color:var(--mute);font:14px 'IBM Plex Mono',monospace}
-@media (max-width:760px){#layouts span{display:none}#right{gap:8px}#pfoot{flex-direction:column-reverse;align-items:flex-start;gap:6px}#intro{left:20px;top:22px}#menu{bottom:22px;flex-wrap:wrap;justify-content:center;width:100%}#menu .dot{display:none}#desc{bottom:84px}#pfoot{left:12px;right:12px}#prog{left:12px;right:12px}.fhead{padding:16px 16px}}
+@media (max-width:760px){#layouts span{display:none}#right{gap:8px}#pfoot{flex-direction:column-reverse;align-items:flex-start;gap:6px}#intro{left:20px;top:22px}#menu{bottom:22px;justify-content:center;width:100%;gap:0}#menu button{padding:0 9px;font-size:14px}#menu button::after{left:9px;right:9px}#menu .dot{display:none}#desc{bottom:84px}#pfoot{left:12px;right:12px}#prog{left:12px;right:12px}.fhead{padding:16px 16px}}
 </style>
 </head>
 <body>
@@ -337,7 +338,7 @@ blockquote cite{display:block;margin-top:10px;font:normal 12px 'IBM Plex Mono',m
   <div class="fhead"><button class="back" type="button" data-back><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 3 3 20h18z"/></svg>Home</button><div class="ftitle">Art &amp; Design</div></div>
   <div class="page seq">
   <header class="phead"><h1>Art &amp; Design</h1></header>
-  <nav class="aidx"><button class="arow" type="button" data-open="waverunner"><span class="thumb"><img src="art/wr-side-cut.png" alt="" loading="lazy"></span><span class="atext"><span class="dk">3D sneaker design · Scholastic National Silver Medal · Mar 2024</span><b>WaveRunner</b><span class="ao">A sneaker that started as a sketch of a wave and became a full 3D model.</span><span class="go">View project →</span></span></button><button class="arow" type="button" data-open="beloved"><span class="thumb"><img src="art/beloved-poster.jpg" alt="" loading="lazy"></span><span class="atext"><span class="dk">Hand-painted custom · AP English Language · 2024</span><b>Beloved Dunks</b><span class="ao">A pair of Dunks that retells Toni Morrison’s Beloved in symbols.</span><span class="go">View project →</span></span></button><button class="arow" type="button" data-open="chromakopia"><span class="thumb"><img class="blend" src="art/chromakopia.jpg" alt="" loading="lazy"></span><span class="atext"><span class="dk">Hand-painted custom · Clu’s Shoes · 2025</span><b>Chromakopia</b><span class="ao">A custom pair inspired by Tyler, the Creator’s Chromakopia.</span><span class="go">View project →</span></span></button><button class="arow" type="button" data-open="dragon"><span class="thumb"><img src="art/dragon.jpg" alt="" loading="lazy"></span><span class="atext"><span class="dk">Hand-painted custom · Clu’s Shoes · 2024</span><b>Year of the Dragon</b><span class="ao">A Lunar New Year pair in red and gold.</span><span class="go">View project →</span></span></button><button class="arow" type="button" data-open="timberland"><span class="thumb"><img src="art/timberland.jpg" alt="" loading="lazy"></span><span class="atext"><span class="dk">Poster · photography and type · 2025</span><b>Timberland</b><span class="ao">A motion-blur shot of a pair of Timbs, with the type layered over it.</span><span class="go">View project →</span></span></button></nav>
+  <nav class="aidx"><button class="arow" type="button" data-open="waverunner"><span class="thumb"><img src="art/wr-side-cut.png" alt="" loading="lazy"></span><span class="atext"><span class="dk">3D sneaker design · Scholastic National Silver Medal · Mar 2024</span><b>WaveRunner</b><span class="ao">A sneaker that started as a sketch of a wave and became a full 3D model.</span><span class="go">View project →</span></span></button><button class="arow" type="button" data-open="beloved"><span class="thumb"><img src="art/beloved-poster.jpg" alt="" loading="lazy"></span><span class="atext"><span class="dk">Hand-painted custom · AP English Language · 2024</span><b>Beloved Dunks</b><span class="ao">A pair of Dunks that retells Toni Morrison’s Beloved in symbols.</span><span class="go">View project →</span></span></button><button class="arow" type="button" data-open="chromakopia"><span class="thumb"><img class="blend" src="art/chromakopia.jpg" alt="" loading="lazy"></span><span class="atext"><span class="dk">Hand-painted custom · Clu’s Shoes · 2025</span><b>Chromakopia</b><span class="ao">A custom pair inspired by Tyler, the Creator’s Chromakopia.</span><span class="go">View project →</span></span></button><button class="arow" type="button" data-open="dragon"><span class="thumb"><img src="art/dragon.jpg" alt="" loading="lazy"></span><span class="atext"><span class="dk">Hand-painted custom · Clu’s Shoes · 2024</span><b>Year of the Dragon</b><span class="ao">A Lunar New Year Dunk High in red, orange and gold.</span><span class="go">View project →</span></span></button><button class="arow" type="button" data-open="timberland"><span class="thumb"><img src="art/timberland.jpg" alt="" loading="lazy"></span><span class="atext"><span class="dk">Poster · photography and type · 2025</span><b>Timberland</b><span class="ao">A motion-blur shot of a pair of Timbs, with the type layered over it.</span><span class="go">View project →</span></span></button></nav>
   </div>
   <article class="detail" data-key="waverunner"><div class="dwrap">
   <button class="dback" type="button">← All work</button>
@@ -356,8 +357,12 @@ blockquote cite{display:block;margin-top:10px;font:normal 12px 'IBM Plex Mono',m
   <div class="dnext"></div>
 </div></article><article class="detail" data-key="dragon"><div class="dwrap">
   <button class="dback" type="button">← All work</button>
-  <div class="dk">Hand-painted custom · Clu’s Shoes · 2024</div><h1>Year of the Dragon</h1><p class="dlede">A Lunar New Year pair in red and gold.</p>
-  <div class="mrow narrow center"><figure style="flex:0.714"><img src="art/dragon.jpg" alt="" loading="lazy" width="1286" height="1800"></figure></div>
+  <div class="dk">Hand-painted custom · Clu’s Shoes · 2024</div><h1>Year of the Dragon</h1><p class="dlede">A Lunar New Year Dunk High in red, orange and gold.</p>
+  <div class="dfig"><img src="art/dragon-photo.jpg" alt="The finished Dragon Dunk Highs on a rock" loading="lazy" width="1800" height="1200" style="max-height:none;border-radius:6px"></div>
+  <section class="sec"><div class="lab">The idea</div><div class="ents prose"><p>A Dunk High painted for the Year of the Dragon. A dragon wraps around the swoosh, and every color and symbol on the shoe is a Lunar New Year wish for luck. I started from a gray and white Dunk High because the neutral sole won’t clash with the colors and the all-leather panels hold paint well.</p></div></section>
+  <section class="sec"><div class="lab">Symbols</div><div class="ents"><ul class="blist"><li><b>Upside-down 福 (fú)</b> on the heel. 福 means fortune, and “upside down” (倒, dào) sounds like “arrive” (到), so it reads as “fortune has arrived.”</li><li><b>Red</b> has been the lucky color in Chinese culture for centuries. It’s said to scare away evil spirits.</li><li><b>Orange</b> stands for success, since 橙 (orange) and 成 (success) are both chéng. Its round shape also means togetherness.</li><li><b>Gold</b> is wealth. Gold paper is what blessings get written on.</li></ul></div></section>
+  <section class="sec"><div class="lab">Sketch</div><div class="ents"><div class="dfig" style="margin:0"><img src="art/dragon-sketch.jpg" alt="Sketch and symbols sheet" loading="lazy" width="1958" height="1252" style="max-height:none"><p class="cap">The design sheet: the sketch, the base shoe, and what each symbol means.</p></div></div></section>
+  <div class="mrow narrow center"><figure style="flex:0.714"><img src="art/dragon.jpg" alt="Year of the Dragon poster" loading="lazy" width="1286" height="1800"><figcaption>Poster</figcaption></figure></div>
   <div class="dnext"></div>
 </div></article><article class="detail" data-key="timberland"><div class="dwrap">
   <button class="dback" type="button">← All work</button>
@@ -471,7 +476,7 @@ const shadow=new THREE.Mesh(new THREE.PlaneGeometry(4.6,1.15),new THREE.MeshBasi
 const ep=[]; [[0,1],[0,2],[0,3],[1,2],[1,3],[2,3]].forEach(([i,j])=>ep.push(V[i].x,V[i].y,V[i].z,V[j].x,V[j].y,V[j].z));
 const eg=new THREE.BufferGeometry(); eg.setAttribute('position',new THREE.Float32BufferAttribute(ep,3));
 die.add(new THREE.LineSegments(eg,new THREE.LineBasicMaterial({color:0xf2efe9,transparent:true,opacity:.55})));
-function resize(){ const w=innerWidth,h=innerHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.position.z= w<760? 13 : 10.2; camera.updateProjectionMatrix(); }
+function resize(){ const w=innerWidth,h=innerHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.position.z= Math.max(10.2, 2.3/(Math.tan(Math.PI/12)*camera.aspect)); camera.updateProjectionMatrix(); }
 addEventListener('resize',resize); resize();
 const Z=new THREE.Vector3(0,0,1);
 function restQuat(i){ const f=faces[i]; const q1=new THREE.Quaternion().setFromUnitVectors(f.n,Z);
