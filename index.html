@@ -215,6 +215,30 @@ blockquote cite{display:block;margin-top:10px;font:normal 12px 'IBM Plex Mono',m
 .gr-tip.on{opacity:1}.gr-tip b{display:block;font:400 19px 'Instrument Serif',serif;color:var(--fg);margin-bottom:2px}.gr-tip>span{display:block}.gr-tip>em{display:block;font:400 26px 'Instrument Serif',serif;font-style:normal;color:var(--fg);margin-top:2px}
 .gr-row{display:flex;justify-content:space-between;gap:14px;margin-top:4px}.gr-row em{font-style:normal;color:var(--fg)}
 @media(max-width:760px){.gr-wrap{margin:0 34px}.gr-axis{font-size:16px}.gr-ring{font-size:14px}}
+.hd-lab{margin-bottom:14px}
+.hurdemo{border:1px solid var(--line);border-radius:10px;padding:18px;background:#0f0f12}
+.hd-top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:14px}
+.hd-k{font:10px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.hd-clock{position:relative;display:flex;align-items:baseline;gap:12px;flex:1;max-width:340px;padding-bottom:8px}
+.hd-clock b{font:400 24px 'Instrument Serif',serif;color:var(--fg);min-width:52px}
+.hd-clock i{position:absolute;left:0;bottom:0;height:2px;background:var(--accent);width:0}
+.hd-clock::after{content:'';position:absolute;left:0;right:0;bottom:0;height:2px;background:#1f1f24;z-index:-1}
+.hd-ctl{display:flex;gap:8px}.hd-ctl button{all:unset;cursor:pointer;font:12px 'IBM Plex Mono',monospace;color:var(--fg);border:1px solid #34343a;border-radius:999px;padding:6px 13px;min-width:14px;text-align:center;transition:border-color .2s,color .2s}.hd-ctl button:hover{border-color:var(--accent);color:var(--accent)}
+.hd-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:18px}
+.hd-map{position:relative;aspect-ratio:16/10;border:1px solid #1c1c20;border-radius:6px;overflow:hidden;background:#0b0b0d}.hd-map canvas{width:100%;height:100%;display:block;cursor:pointer}
+.hd-maplab{position:absolute;left:10px;bottom:8px;font:10px 'IBM Plex Mono',monospace;color:#55524d}
+.hd-tab{width:100%;border-collapse:collapse;font:12px 'IBM Plex Mono',monospace}
+.hd-tab th{font-weight:400;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#55524d;text-align:right;padding:0 6px 8px}.hd-tab th:first-child,.hd-tab td:first-child{text-align:left}
+.hd-tab td{padding:6px;text-align:right;color:#c9c5bd;border-top:1px solid #1c1c20;font-variant-numeric:tabular-nums}
+.hd-tab tr{cursor:pointer;transition:background .2s}.hd-tab tbody tr:hover{background:rgba(255,255,255,.03)}.hd-tab tr.on td{color:var(--fg);background:rgba(233,165,74,.07)}.hd-tab tr.on td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
+.hd-tab .up,.hd-pnl .up{color:#7fb38a}.hd-tab .dn,.hd-pnl .dn{color:#d9725f}
+.hd-pnl{margin-top:14px;padding-top:12px;border-top:1px solid #1c1c20;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}.hd-pnl b{font:400 30px 'Instrument Serif',serif}.hd-pnl em{flex-basis:100%;font:11px 'IBM Plex Mono',monospace;font-style:normal;color:var(--mute)}
+.hd-chart{position:relative;margin-top:16px}.hd-chart canvas{width:100%;height:210px;display:block;cursor:crosshair}
+.hd-chead{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px 16px;margin-bottom:6px;font:11px 'IBM Plex Mono',monospace;color:var(--mute)}.hd-chead b{font-weight:400;color:var(--fg)}
+.hd-chead i{display:inline-block;width:12px;height:2px;margin:0 6px 3px 14px;vertical-align:middle}.hd-chead i.dash{background:repeating-linear-gradient(90deg,var(--mute) 0 3px,transparent 3px 6px)}
+.hd-tip{position:absolute;top:30px;pointer-events:none;opacity:0;transition:opacity .15s;background:rgba(16,16,19,.96);border:1px solid #34343a;border-radius:8px;padding:8px 11px;font:11px/1.6 'IBM Plex Mono',monospace;color:var(--mute);min-width:128px}.hd-tip.on{opacity:1}.hd-tip b{color:var(--fg);font-weight:400}.hd-tip div{display:flex;justify-content:space-between;gap:12px}.hd-tip em{font-style:normal;color:var(--fg)}
+.hd-note{font:11px/1.5 'IBM Plex Mono',monospace;color:var(--dim);margin:14px 0 0}
+@media (max-width:760px){.hd-grid{grid-template-columns:1fr}.hurdemo{padding:12px}.hd-chart canvas{height:180px}.hd-ctl button{padding:6px 10px}}
 .gr-note{font:11px 'IBM Plex Mono',monospace;color:var(--dim);margin-top:4px}
 
 .dfig .cap{font:12px 'IBM Plex Mono',monospace;color:var(--mute);margin:10px 0 0;max-width:640px;line-height:1.5}
@@ -299,6 +323,7 @@ blockquote cite{display:block;margin-top:10px;font:normal 12px 'IBM Plex Mono',m
   <button class="dback" type="button">← All projects</button>
   <div class="dk">Cornell Trading Competition · 7th place · Oct 2026</div><h1>Hurricane Season bot</h1><p class="dlede">A trading bot that prices storm damage live and trades while the market is slow to catch up.</p>
   <div class="stats"><div><b>1,800</b><span>storms studied</span></div><div><b>+$5–9K</b><span>per season, holdout replay</span></div><div><b>7th</b><span>place, Systematic Equities</span></div></div>
+  <div class="dfig"><div class="lab hd-lab">Try it: a storm, live</div><div id="hurdemo" class="hurdemo"></div></div>
   <section class="sec"><div class="lab">Overview</div><div class="ents prose"><p>Our team’s bot for the Systematic Equities case at the 2026 Cornell Trading Competition. Hurricanes hit a set of companies, and the exchange reprices them slowly while a storm is happening. The bot works out each company’s fair value from the live storm feed, trades toward it while the market lags, and gets out once the market catches up.</p></div></section>
   <section class="sec"><div class="lab">What we built</div><div class="ents"><ul class="blist"><li>Research on 600 simulated seasons showing the settlement prices are exact formulas of storm damage, and that the market only lags mid-storm</li><li>A live “nowcast” model of damage and outages from the storm feed, combining news sources that are each only 40 to 70% reliable</li><li>A holdout-only backtester with simulated spreads, latency and order-rate limits</li><li>ETF-vs-basket arbitrage, risk limits, kill switches, and a live dashboard for the team</li></ul></div></section>
   <section class="sec"><div class="lab">Stack</div><div class="ents"><div class="tags big">Python · WebSockets · scikit-learn · pytest</div></div></section>
@@ -845,5 +870,6 @@ if(hh in map) setTimeout(()=>{ target=map[hh]; die.quaternion.copy(restQuat(map[
 })();
 </script>
 <script src="proj/gm-radar.js"></script>
+<script src="proj/hurricane-demo.js"></script>
 </body>
 </html>
