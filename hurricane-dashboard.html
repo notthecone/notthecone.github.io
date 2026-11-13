@@ -16,9 +16,9 @@
   function step(){ if(!R) return; if(playing){ if(i<R.frames.length-1){ i++; } else { i=0; } frameStart=realNow(); show(); refresh(); } setTimeout(step,R?R.every*1000/speed:1000); }
   let bar,rng,lab,pb,sb;
   function build(){ bar=document.createElement('div'); bar.id='replaybar';
-    bar.innerHTML='<button type="button" id="rp-play" title="Play or pause">❚❚</button><input id="rp-rng" type="range" min="0" value="0"><span id="rp-lab"></span><button type="button" id="rp-speed">1×</button><span id="rp-note">Real bot + real dashboard, holdout season 10 on our mock exchange, 4× speed · read-only</span>';
+    bar.innerHTML='<button type="button" id="rp-play" title="Play or pause">❚❚</button><input id="rp-rng" type="range" min="0" value="0"><span id="rp-lab"></span><button type="button" id="rp-speed">1×</button><a href="index.html#projects/hurricane" id="rp-back">← Connie’s site</a><span id="rp-note">Real bot + real dashboard, holdout season 10 on our mock exchange, 4× speed · read-only</span>';
     document.body.appendChild(bar); const st=document.createElement('style');
-    st.textContent='#replaybar{position:fixed;left:0;right:0;bottom:0;z-index:99999;display:flex;align-items:center;gap:12px;padding:10px 16px;background:rgba(12,12,14,.96);border-top:1px solid #2a2a30;font:12px ui-monospace,Menlo,monospace;color:#c9c5bd}#replaybar button{all:unset;cursor:pointer;border:1px solid #3a3a42;border-radius:999px;padding:4px 12px;color:#ece9e3}#replaybar button:hover{border-color:#e9a54a;color:#e9a54a}#rp-rng{flex:1;accent-color:#e9a54a}#rp-note{color:#8f8b84}body{padding-bottom:56px!important}@media(max-width:700px){#rp-note{display:none}}';
+    st.textContent='#replaybar{position:fixed;left:0;right:0;bottom:0;z-index:99999;display:flex;align-items:center;gap:12px;padding:10px 16px;background:rgba(12,12,14,.96);border-top:1px solid #2a2a30;font:12px ui-monospace,Menlo,monospace;color:#c9c5bd}#replaybar button{all:unset;cursor:pointer;border:1px solid #3a3a42;border-radius:999px;padding:4px 12px;color:#ece9e3}#replaybar button:hover{border-color:#e9a54a;color:#e9a54a}#rp-rng{flex:1;accent-color:#e9a54a}#rp-note{color:#8f8b84}#rp-back{color:#ece9e3;text-decoration:none;border-bottom:1px solid #55524d;white-space:nowrap}#rp-back:hover{color:#e9a54a}body{padding-bottom:56px!important}@media(max-width:700px){#rp-note{display:none}}';
     document.head.appendChild(st); rng=bar.querySelector('#rp-rng'); lab=bar.querySelector('#rp-lab'); pb=bar.querySelector('#rp-play'); sb=bar.querySelector('#rp-speed'); rng.max=R.frames.length-1;
     rng.oninput=()=>{ i=+rng.value; frameStart=realNow(); show(); refresh(); };
     pb.onclick=()=>{ playing=!playing; pb.textContent=playing?'❚❚':'▶'; };
@@ -26,7 +26,7 @@
     setTimeout(step,R.every*1000); }
   function show(){ if(!rng) return; rng.value=i; const s=Math.round(R.frames[i].at-R.frames[0].at), m=Math.floor(s/60); lab.textContent=m+':'+String(s%60).padStart(2,'0')+' / '+Math.round((R.frames[R.frames.length-1].at-R.frames[0].at)/60)+' min'; }
 })();
-</script><meta charset="utf-8"><title>CLNR dashboard · replay</title>
+</script><meta charset="utf-8"><title>Hurricane bot dashboard · Connie Lu</title><meta name="robots" content="noindex">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
 :root{--bg:#0e1116;--panel:#161b22;--line:#262d38;--tx:#d6dde6;--mut:#7d8896;--g:#2ea043;--r:#e5534b;--gr:#6e7681;--y:#d4a72c;--b:#4c9aff}
