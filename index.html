@@ -323,7 +323,6 @@ blockquote cite{display:block;margin-top:10px;font:normal 12px 'IBM Plex Mono',m
   <button class="dback" type="button">← All projects</button>
   <div class="dk">Cornell Trading Competition · 7th place · Oct 2026</div><h1>Hurricane Season bot</h1><p class="dlede">A trading bot that prices storm damage live and trades while the market is slow to catch up.</p>
   <div class="stats"><div><b>1,800</b><span>storms studied</span></div><div><b>+$5–9K</b><span>per season, holdout replay</span></div><div><b>7th</b><span>place, Systematic Equities</span></div></div>
-  <div class="dfig"><div class="lab hd-lab">Try it: a storm, live</div><div id="hurdemo" class="hurdemo"></div></div>
   <section class="sec"><div class="lab">Overview</div><div class="ents prose"><p>Our team’s bot for the Systematic Equities case at the 2026 Cornell Trading Competition. Hurricanes hit a set of companies, and the exchange reprices them slowly while a storm is happening. The bot works out each company’s fair value from the live storm feed, trades toward it while the market lags, and gets out once the market catches up.</p></div></section>
   <section class="sec"><div class="lab">What we built</div><div class="ents"><ul class="blist"><li>Research on 600 simulated seasons showing the settlement prices are exact formulas of storm damage, and that the market only lags mid-storm</li><li>A live “nowcast” model of damage and outages from the storm feed, combining news sources that are each only 40 to 70% reliable</li><li>A holdout-only backtester with simulated spreads, latency and order-rate limits</li><li>ETF-vs-basket arbitrage, risk limits, kill switches, and a live dashboard for the team</li></ul></div></section>
   <section class="sec"><div class="lab">Stack</div><div class="ents"><div class="tags big">Python · WebSockets · scikit-learn · pytest</div></div></section>
@@ -870,6 +869,5 @@ if(hh in map) setTimeout(()=>{ target=map[hh]; die.quaternion.copy(restQuat(map[
 })();
 </script>
 <script src="proj/gm-radar.js"></script>
-<script src="proj/hurricane-demo.js"></script>
 </body>
 </html>
