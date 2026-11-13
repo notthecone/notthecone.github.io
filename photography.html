@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Connie Lu · Photography</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=Instrument+Serif&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0b0c;--fg:#ece9e3;--mute:#8f8b84;--dim:#55524d;--line:#26262a;--accent:#e9a54a}
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:14px/1.5 Inter,system-ui,sans-serif;overflow:hidden}
+#stage,#stage *{user-select:none;-webkit-user-select:none;-webkit-user-drag:none}
+#stage{position:fixed;inset:0;overflow:hidden;cursor:grab}
+#stage.drag{cursor:grabbing}
+#edges{position:absolute;inset:0;width:100%;height:100%;z-index:2}
+#edges line{stroke:rgba(236,233,227,.2);stroke-width:1;pointer-events:none}
+#edges line.f{stroke:rgba(236,233,227,.38)}
+#edges line.hot{stroke:var(--accent);stroke-opacity:.95}
+#edges line.hit{stroke:transparent;stroke-width:16;pointer-events:stroke;cursor:pointer}
+.ph{position:absolute;left:0;top:0;will-change:transform,width,height,opacity;cursor:pointer;border-radius:2px;overflow:hidden;background:#141416}
+.ph img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.ph.nb{box-shadow:0 14px 40px rgba(0,0,0,.6)}
+.ph.focal{cursor:zoom-in;box-shadow:0 30px 90px rgba(0,0,0,.75)}
+.why{position:absolute;left:0;top:0;pointer-events:none;font:10.5px 'IBM Plex Mono',monospace;letter-spacing:.05em;color:var(--fg);background:rgba(11,11,12,.9);border:1px solid var(--line);padding:3px 8px;border-radius:999px;white-space:nowrap;transform:translate(-50%,-50%);transition:opacity .35s,border-color .2s,color .2s;z-index:3500}
+.why.hot{border-color:var(--accent);color:var(--accent)}
+.region{position:absolute;left:0;top:0;pointer-events:none;font:10px 'IBM Plex Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:rgba(236,233,227,.45);white-space:nowrap;transform:translate(-50%,-50%);z-index:3100}
+#head{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:22px 30px;z-index:4000;pointer-events:none;background:linear-gradient(rgba(11,11,12,.9),rgba(11,11,12,0))}
+#head h1{margin:0;font:400 26px 'Instrument Serif',serif}
+#head .proto{font:10px 'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.1em}
+#cap{position:fixed;left:50%;z-index:3600;transform:translateX(-50%);text-align:center;pointer-events:none;transition:opacity .3s;width:min(640px,90vw)}
+#cap h2{margin:0;font:400 28px/1.1 'Instrument Serif',serif;text-shadow:0 2px 16px rgba(0,0,0,.9)}
+#cap .m{margin-top:6px;font:11px 'IBM Plex Mono',monospace;color:var(--mute);text-shadow:0 1px 8px #000}
+#foot{position:fixed;left:0;right:0;bottom:0;z-index:4000;display:flex;justify-content:space-between;align-items:flex-end;padding:16px 30px 20px;gap:20px;background:linear-gradient(rgba(11,11,12,0),rgba(11,11,12,.92) 45%);pointer-events:none}
+#foot>*{pointer-events:auto}
+#filt{display:flex;gap:16px}
+#filt button{all:unset;cursor:pointer;color:var(--mute);letter-spacing:.06em;text-transform:uppercase;font-size:10.5px;padding-bottom:3px;border-bottom:1px solid transparent}
+#filt button.on,#filt button:hover{color:var(--fg);border-color:var(--fg)}
+#filt em{font-style:normal;color:var(--dim);margin-left:4px}
+#mini{position:fixed;right:24px;bottom:22px;z-index:4100;width:170px;text-align:center;pointer-events:auto}
+#mini canvas{width:170px;height:170px;display:block;cursor:grab;touch-action:none}
+#mini canvas:active{cursor:grabbing}
+#mini .where{font:10px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#mini .where b{color:var(--fg);font-weight:400}
+#back{all:unset;position:fixed;left:30px;top:66px;z-index:4100;cursor:pointer;font:11px 'IBM Plex Mono',monospace;letter-spacing:.06em;color:var(--mute);transition:opacity .3s,color .2s}
+#back:hover{color:var(--fg)}#back[hidden]{display:none}
+.region{pointer-events:auto;cursor:pointer;padding:8px 14px;z-index:3400!important;border-radius:999px;transition:color .2s,background .2s,opacity .3s}
+.region:hover{color:var(--fg)!important;background:rgba(236,233,227,.08)}
+.region.cur{color:var(--accent)!important}
+#arr{position:fixed;left:50%;top:24px;transform:translateX(-50%);z-index:4100;display:flex;gap:4px;align-items:center;background:rgba(11,11,12,.85);border:1px solid var(--line);border-radius:999px;padding:4px;opacity:0;pointer-events:none;transition:opacity .4s}
+#arr.on{opacity:1;pointer-events:auto}
+#arr span{font:10px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-right:6px}
+#arr button{all:unset;cursor:pointer;font:11.5px Inter,sans-serif;color:var(--mute);padding:5px 12px;border-radius:999px}
+#arr button:hover{color:var(--fg)}
+#arr kbd{font:10px 'IBM Plex Mono',monospace;border:1px solid var(--line);border-radius:3px;padding:0 4px;margin-left:6px;color:var(--dim)}
+.ph.lab::after{content:attr(data-t);position:absolute;left:0;right:0;bottom:0;padding:18px 9px 7px;font:400 14px/1.2 'Instrument Serif',serif;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.75));pointer-events:none}
+#stage.gridmode{cursor:grab}
+#zoomctl{position:fixed;left:30px;bottom:56px;z-index:4100;display:none;gap:4px}
+#zoomctl.on{display:flex}
+#zoomctl button{all:unset;cursor:pointer;width:30px;height:30px;border:1px solid var(--line);border-radius:50%;text-align:center;line-height:29px;color:var(--mute);background:rgba(11,11,12,.85);font-size:15px}
+#zoomctl button:hover{color:var(--fg);border-color:var(--fg)}
+#ctitle{position:fixed;left:50%;top:72px;transform:translateX(-50%);z-index:4000;text-align:center;pointer-events:none;opacity:0;transition:opacity .4s}
+#ctitle .k{font:10px 'IBM Plex Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--mute)}
+#ctitle h2{margin:4px 0 0;font:400 34px 'Instrument Serif',serif}
+.ph.focal::after{content:'View';position:absolute;right:10px;bottom:10px;font:10px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;background:rgba(11,11,12,.75);border:1px solid rgba(236,233,227,.25);padding:4px 9px;border-radius:999px;opacity:0;transition:opacity .25s}
+.ph.focal:hover::after{opacity:1}
+#lb{flex-direction:column;gap:18px;padding:30px 30px 26px}
+#lb img{max-width:92vw;max-height:64vh;box-shadow:0 30px 90px rgba(0,0,0,.7)}
+#lb .info{width:min(860px,92vw);display:grid;grid-template-columns:1fr auto;gap:18px 28px;align-items:end;cursor:default}
+#lb h3{margin:0;font:400 32px/1.05 'Instrument Serif',serif}
+#lb .meta{font:11px 'IBM Plex Mono',monospace;color:var(--mute);margin-top:6px}
+#lb .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+#lb .tags span{font-size:12px;padding:3px 10px;border:1px solid var(--line);border-radius:999px;color:#c9c5bd}
+#lb .specs{display:flex;border:1px solid var(--line);border-radius:4px}
+#lb .specs div{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 16px}
+#lb .specs div+div{border-left:1px solid var(--line)}
+#lb .specs b{font:400 18px 'Instrument Serif',serif;font-weight:400}
+#lb .specs span{font:9.5px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+#lb .x{position:fixed;top:18px;right:26px;font:11px 'IBM Plex Mono',monospace;color:var(--mute)}
+@media(max-width:760px){#lb .info{grid-template-columns:1fr}#mini{width:120px;right:12px;bottom:60px}#mini canvas{width:120px;height:120px}}
+#status{position:fixed;left:50%;top:24px;transform:translateX(-50%);z-index:4001;font:10.5px 'IBM Plex Mono',monospace;letter-spacing:.08em;color:var(--mute);pointer-events:none;transition:opacity .4s;text-align:center}
+#status b{color:var(--accent);font-weight:400}
+#hint{transition:opacity 1s;position:fixed;right:30px;top:28px;z-index:4000;font:10.5px 'IBM Plex Mono',monospace;color:var(--dim);text-align:right;line-height:1.7;pointer-events:none}
+#mapcap{position:fixed;left:50%;bottom:74px;transform:translateX(-50%);z-index:4000;text-align:center;pointer-events:none;opacity:0;transition:opacity .25s}
+#mapcap b{display:block;font:400 22px 'Instrument Serif',serif}#mapcap span{font:11px 'IBM Plex Mono',monospace;color:var(--mute)}
+#mapcap.on{opacity:1}
+#coach{position:fixed;left:50%;bottom:86px;transform:translate(-50%,10px);z-index:4200;display:flex;gap:18px;align-items:center;background:rgba(14,14,17,.94);border:1px solid var(--line);border-radius:999px;padding:10px 12px 10px 20px;font-size:12.5px;color:#c9c5bd;opacity:0;pointer-events:none;transition:opacity .5s,transform .5s;white-space:nowrap}
+#coach.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+#coach b{font:10px 'IBM Plex Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:400}
+#coach i{font-style:normal;font:11px 'IBM Plex Mono',monospace;color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:1px 5px;margin-right:6px}
+#coach button{all:unset;cursor:pointer;font-size:12px;color:#111;background:var(--fg);border-radius:999px;padding:5px 12px}
+@media(max-width:760px){#coach{flex-direction:column;align-items:flex-start;border-radius:12px;gap:6px;white-space:normal;bottom:120px}}
+html.embed #head h1{visibility:hidden}html.embed #back{top:70px}html.embed #hint{display:none}
+#lb{position:fixed;inset:0;z-index:5000;background:rgba(8,8,9,.96);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .35s;cursor:zoom-out}
+#lb.open{opacity:1;pointer-events:auto}#lb img{max-width:90vw;max-height:88vh}
+@media(max-width:760px){#head h1{font-size:20px}#head .proto,#hint{display:none}#filt{gap:9px}#filt button{font-size:9.5px}#filt em{display:none}#cap h2{font-size:22px}}
+</style></head><body>
+<div id="stage"><svg id="edges"></svg></div>
+<div id="head"><h1>Connie Lu · Photography</h1></div>
+<div id="status"></div>
+<div id="hint">click a photo or a line to travel · Esc for the full map</div>
+<div id="cap"><h2></h2><div class="m"></div></div>
+<div id="mapcap"><b></b><span></span></div>
+<div id="foot"><div id="filt"></div></div>
+<div id="mini"><canvas width="340" height="340"></canvas><div class="where"></div></div>
+<button id="back" type="button" hidden>← Back</button>
+<div id="arr"><button id="flat" type="button">Flatten to grid <kbd>F</kbd></button></div>
+<div id="zoomctl"><button type="button" data-z="1">+</button><button type="button" data-z="-1">−</button><button type="button" data-z="0" title="Fit">⤢</button></div>
+<div id="ctitle"><div class="k">Cluster</div><h2></h2></div>
+<div id="coach"><b>How to explore</b><span><i>Click</i> a photo or a line to travel</span><span><i>Esc</i> zooms out to the full map</span><span><i>F</i> flattens it into a grid</span><button type="button">Got it</button></div>
+<div id="lb"><span class="x">Esc · click to close</span><img alt=""><div class="info"><div><h3></h3><div class="meta"></div><div class="tags"></div></div><div class="specs"></div></div></div>
+<script src="data2.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const EMBED=/[?&]embed=1/.test(location.search); if(EMBED) document.documentElement.classList.add('embed');
+const P=window.PHOTOS.slice(), N=P.length;
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fd=p=>{ const d=new Date(p.date+'T12:00'); return MON[d.getMonth()]+' '+d.getFullYear(); };
+const clean=p=>(p.place||'').replace(/\?$/,'');
+const artist=p=>clean(p).startsWith('Concert: ')?clean(p).slice(9):null;
+const place=p=>{ const c=clean(p); return (!c||c==='Unknown'||c==='Concert'||c.startsWith('Concert')||c.startsWith('['))?null:c; };
+const LIGHT={stage:'Stage light',golden:'Golden hour',fog:'Fog',night:'Night',mono:'Black and white',day:'Daylight'};
+const GEN={stage:'Stage',wild:'Outdoors',streets:'Streets'};
+const cluster=p=>artist(p)||place(p)||GEN[p.genre];
+function hsl(h){ if(!/^#[0-9a-f]{6}$/i.test(h||'')) return [0,0,.4]; const r=parseInt(h.slice(1,3),16)/255,g=parseInt(h.slice(3,5),16)/255,b=parseInt(h.slice(5,7),16)/255; const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn; let H=0,S=0,L=(mx+mn)/2; if(d){ S=d/(1-Math.abs(2*L-1)); H=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4; H*=60; if(H<0)H+=360; } return [H,S,L]; }
+
+/* ---------- similarity: specific shared things count more than generic ones ---------- */
+const feats=P.map(p=>{ const f=[];
+  if(artist(p)) f.push(['artist',artist(p),3.0]); if(place(p)) f.push(['place',place(p),2.6]);
+  if(p.group&&p.group!=='null'&&p.group!=='scholastic') f.push(['set',p.group,2.2]);
+  if(p.light) f.push(['light',LIGHT[p.light],1.1]); (p.subjects||[]).forEach(t=>f.push(['subj',t,1.9])); f.push(['genre',GEN[p.genre],0.35]); if(p.award) f.push(['award','Scholastic',1.2]); return f; });
+const df={}; feats.forEach(fs=>fs.forEach(([k,v])=>{ df[k+'|'+v]=(df[k+'|'+v]||0)+1; }));
+const idf=key=>Math.log(1+N/df[key]);
+const S=[...Array(N)].map(()=>new Float32Array(N)), WHY={};
+for(let i=0;i<N;i++) for(let j=i+1;j<N;j++){ let s=0; const why=[]; const B=new Map(feats[j].map(([k,v,w])=>[k+'|'+v,w]));
+  feats[i].forEach(([k,v,w])=>{ const key=k+'|'+v; if(B.has(key)){ const c=w*idf(key); s+=c; why.push([c,k,v]); } });
+  const a=hsl(P[i].swatch),b=hsl(P[j].swatch); const dh=Math.min(Math.abs(a[0]-b[0]),360-Math.abs(a[0]-b[0]))/180; const cs=(1-dh)*Math.min(a[1],b[1]); if(cs>.45){ s+=cs*.7; why.push([cs*.7,'color','Similar color']); }
+  const dd=Math.abs(new Date(P[i].date)-new Date(P[j].date))/864e5; if(dd<4&&!why.some(w=>['set','place','artist'].includes(w[1]))){ s+=.9; why.push([.9,'time','Same week']); }
+  why.sort((x,y)=>y[0]-x[0]); S[i][j]=S[j][i]=s; WHY[i+','+j]=WHY[j+','+i]=why; }
+const reason=(i,j)=>{ const ws=(WHY[i+','+j]||[]).filter(w=>w[1]!=='set'&&w[1]!=='genre'); return ws[0]?ws[0][2]:({stage:'Also on stage',wild:'Also outdoors',streets:'Also streets'})[P[j].genre]; };
+
+/* ---------- filters: the map itself shrinks to the photos you pick ---------- */
+const FILTERS=[['all','All work',()=>true],['stage','Stage',p=>p.genre==='stage'],['wild','Outdoors',p=>p.genre==='wild'],['streets','Streets',p=>p.genre==='streets']];
+let active=new Set(P.map((p,i)=>i)), filterKey='all';
+const NBC={};
+function nbrs(i){ const key=filterKey+':'+i; if(NBC[key]) return NBC[key];
+  const cand=[...active].filter(j=>j!==i&&S[i][j]>0).sort((a,b)=>S[i][b]-S[i][a]); const out=[], used={};
+  for(const j of cand){ if(out.length>=6) break; const r=reason(i,j); if((used[r]||0)>=2) continue; out.push(j); used[r]=(used[r]||0)+1; }
+  if(filterKey==='all'&&!out.some(j=>P[j].genre!==P[i].genre)){ const x=cand.find(j=>P[j].genre!==P[i].genre&&!out.includes(j)); if(x!=null&&out.length){ out.pop(); out.push(x); } }
+  for(const j of cand){ if(out.length>=6) break; if(!out.includes(j)) out.push(j); }
+  return NBC[key]=out; }
+
+/* ---------- 3D layout: related photos pull together, clusters push apart ---------- */
+const LAY={};
+function layout(){ if(LAY[filterKey]) return LAY[filterKey]; const ids=[...active], n=ids.length, ix=new Map(ids.map((g,k)=>[g,k]));
+  const p=ids.map((g,k)=>({x:Math.cos(k*2.4)*500*Math.sqrt(k/n),y:Math.sin(k*2.4)*500*Math.sqrt(k/n),z:Math.sin(k*1.7)*400*Math.sqrt(k/n)}));
+  const E=[]; ids.forEach(g=>nbrs(g).slice(0,5).forEach(h=>{ if(g<h) E.push([ix.get(g),ix.get(h),S[g][h]]); }));
+  const cl=ids.map(g=>cluster(P[g]));
+  const IT=700;
+  for(let it=0;it<IT;it++){ const t=1-it/IT, f=p.map(()=>[0,0,0]);
+    for(let a=0;a<n;a++) for(let b=a+1;b<n;b++){ const dx=p[a].x-p[b].x, dy=p[a].y-p[b].y, dz=p[a].z-p[b].z, d2=Math.max(400,dx*dx+dy*dy+dz*dz), d=Math.sqrt(d2); const same=cl[a]===cl[b]; const k=(same?60000:190000)/d2/d; f[a][0]+=dx*k; f[a][1]+=dy*k; f[a][2]+=dz*k; f[b][0]-=dx*k; f[b][1]-=dy*k; f[b][2]-=dz*k; }
+    E.forEach(([a,b,w])=>{ const dx=p[b].x-p[a].x, dy=p[b].y-p[a].y, dz=p[b].z-p[a].z, d=Math.hypot(dx,dy,dz)||1, rest=cl[a]===cl[b]?110:240, k=(d-rest)*0.012*Math.min(3,w); f[a][0]+=dx/d*k; f[a][1]+=dy/d*k; f[a][2]+=dz/d*k; f[b][0]-=dx/d*k; f[b][1]-=dy/d*k; f[b][2]-=dz/d*k; });
+    const C={}; cl.forEach((c,a)=>{ (C[c]=C[c]||{x:0,y:0,z:0,n:0}); C[c].x+=p[a].x; C[c].y+=p[a].y; C[c].z+=p[a].z; C[c].n++; });
+    for(let a=0;a<n;a++){ const c=C[cl[a]]; if(c.n>1){ f[a][0]+=(c.x/c.n-p[a].x)*0.02; f[a][1]+=(c.y/c.n-p[a].y)*0.02; f[a][2]+=(c.z/c.n-p[a].z)*0.02; }
+      f[a][0]-=p[a].x*0.003; f[a][1]-=p[a].y*0.003; f[a][2]-=p[a].z*0.003; const m=Math.hypot(...f[a]), cap=40*t+2; const s=m>cap?cap/m:1; p[a].x+=f[a][0]*s; p[a].y+=f[a][1]*s; p[a].z+=f[a][2]*s; } }
+  const out={}; ids.forEach((g,k)=>out[g]=p[k]);
+  const ds=ids.map(g=>Math.hypot(out[g].x,out[g].y,out[g].z)).sort((a,b)=>a-b); out._R=ds[Math.floor(ds.length*.85)]||300;
+  return LAY[filterKey]=out; }
+
+/* ---------- DOM ---------- */
+const stage=$('#stage'), svg=$('#edges');
+let hover=-1;
+const el=P.map((p,i)=>{ const d=document.createElement('div'); d.className='ph'; d.innerHTML='<img src="'+p.src.replace('img/','img/t/')+'" alt="" decoding="async" draggable="false">'; d.dataset.i=i;
+  d.onpointerenter=()=>{ hover=i; }; d.onpointerleave=()=>{ if(hover===i) hover=-1; }; stage.appendChild(d); return {d,i,ar:p.w/p.h,c:null,w:{x:0,y:0,z:0},vis:0}; });
+const whyEls=[...Array(6)].map(()=>{ const d=document.createElement('div'); d.className='why'; stage.appendChild(d); return d; });
+let regions=[];
+function buildRegions(){ regions.forEach(r=>r.d.remove()); regions=[]; const m={};
+  [...active].forEach(i=>{ const c=artist(P[i])||place(P[i]); if(c)(m[c]=m[c]||[]).push(i); });
+  Object.entries(m).forEach(([v,ix])=>{ if(ix.length<3) return; const d=document.createElement('div'); d.className='region'; d.textContent=v; stage.appendChild(d); const r={d,ix,name:v}; d.addEventListener('pointerup',e=>{ e.stopPropagation(); if(drag&&drag.moved>4) return; drag=null; stage.classList.remove('drag'); userActed(); enterCluster(r); }); regions.push(r); }); }
+let EDGES=[]; function edgeList(){ const E=[], seen=new Set(); [...active].forEach(i=>nbrs(i).slice(0,3).forEach(j=>{ const k=i<j?i+','+j:j+','+i; if(!seen.has(k)){ seen.add(k); E.push([i,j]); } })); return E; }
+
+/* ---------- camera ---------- */
+let mode='map', focal=-1, trail=[], tIdx=-1, hist=[], curCluster=null;
+const snap=()=>({mode,focal,cluster:curCluster});
+function pushHist(){ const s=snap(); const t=hist[hist.length-1]; if(!t||t.mode!==s.mode||t.focal!==s.focal||t.cluster!==s.cluster) hist.push(s); if(hist.length>60) hist.shift(); $('#back').hidden=!hist.length; }
+function goBack(){ const s=hist.pop(); $('#back').hidden=!hist.length; if(!s) return; if(s.mode==='focus') travel(s.focal,true,true); else if(s.mode==='cluster'){ const r=regions.find(r=>r.name===s.cluster); r?enterCluster(r,true):zoomOut(true); } else zoomOut(true); }
+const cam={x:0,y:0,z:0,s:.5,yaw:.5,pitch:-.25}, goal={x:0,y:0,z:0,s:.5,yaw:.5,pitch:-.25};
+const baseS=()=>Math.min(innerWidth,innerHeight)*.42/layout()._R;
+function fitMap(){ goal.x=goal.y=goal.z=0; goal.s=baseS(); }
+function travel(i,fromTrail,noHist){ if(!active.has(i)) return; if(i===focal&&mode==='focus') return; if(!noHist) pushHist(); if(!trail.includes(i)) trail.push(i); focal=i; mode='focus'; curCluster=null; setHash('#p/'+slug(P[i].title)); const L=layout();
+  goal.x=L[i].x; goal.y=L[i].y; goal.z=L[i].z; goal.s=baseS()*2.6; travelD=Math.max(1,Math.hypot(goal.x-cam.x,goal.y-cam.y,goal.z-cam.z)); caption(); }
+let travelD=1;
+function zoomOut(noHist){ if(mode==='map') return; if(!noHist) pushHist(); mode='map'; focal=-1; curCluster=null; setHash('#map'); fitMap(); }
+function enterCluster(r,noHist){ if(!noHist) pushHist(); if(arrange!=='cloud') setArrange('cloud'); mode='cluster'; focal=-1; curCluster=r.name; setHash('#g/'+slug(r.name)); const ix=r.ix.filter(i=>active.has(i)); const L=layout(); const c=ix.reduce((a,i)=>({x:a.x+L[i].x,y:a.y+L[i].y,z:a.z+L[i].z}),{x:0,y:0,z:0}); c.x/=ix.length; c.y/=ix.length; c.z/=ix.length;
+  const R=Math.max(70,...ix.map(i=>Math.hypot(L[i].x-c.x,L[i].y-c.y,L[i].z-c.z))); goal.x=c.x; goal.y=c.y; goal.z=c.z; goal.s=Math.min(innerWidth,innerHeight)*.3/R; clusterSet=new Set(ix); $('#ctitle h2').textContent=r.name; $('#ctitle .k').textContent=ix.length+' photos'; }
+let clusterSet=new Set();
+function caption(){ const p=P[focal]; $('#cap h2').textContent=p.title; $('#cap .m').textContent=[fd(p),place(p)||artist(p)||GEN[p.genre],(p.cam&&p.cam!=='None'?p.cam:null),p.award].filter(Boolean).join('  ·  '); }
+$('#back').onclick=()=>{ userActed(); goBack(); };
+FILTERS.forEach(([k,lab,fn])=>{ const b=document.createElement('button'); b.type='button'; b.dataset.k=k; b.innerHTML=lab+'<em>'+P.filter(fn).length+'</em>'; if(k==='all') b.classList.add('on'); b.onclick=()=>{ userActed(); setFilter(k); }; $('#filt').appendChild(b); });
+function setFilter(k){ filterKey=k; const fn=FILTERS.find(f=>f[0]===k)[2]; active=new Set(P.map((p,i)=>i).filter(i=>fn(P[i]))); document.querySelectorAll('#filt button').forEach(b=>b.classList.toggle('on',b.dataset.k===k)); layout(); buildRegions(); EDGES=edgeList();
+  if(mode==='focus'){ if(!active.has(focal)){ const h=[...active].find(i=>P[i].tier==='hero'); travel(h!=null?h:[...active][0],false,true); } else { const L=layout(); goal.x=L[focal].x; goal.y=L[focal].y; goal.z=L[focal].z; } } else { mode='map'; curCluster=null; fitMap(); if(arrange==='grid') setTimeout(snapGrid,50); } }
+
+/* ---------- input: drag turns the map, clicks travel ---------- */
+let drag=null;
+stage.addEventListener('pointerdown',e=>{ e.preventDefault(); userActed(); drag={x:e.clientX,y:e.clientY,yaw:goal.yaw,pitch:goal.pitch,moved:0,gx:gvGoal.x,gy:gvGoal.y}; stage.classList.add('drag'); });
+addEventListener('pointermove',e=>{ if(!drag) return; const dx=e.clientX-drag.x, dy=e.clientY-drag.y; drag.moved=Math.max(drag.moved,Math.hypot(dx,dy)); if(drag.moved>4&&mode==='map'&&arrange==='grid'){ gvGoal.x=drag.gx+dx; gvGoal.y=drag.gy+dy; gv.x=gvGoal.x; gv.y=gvGoal.y; return; }
+  if(drag.moved>4){ goal.yaw=drag.yaw+dx*0.006; goal.pitch=Math.max(-1.25,Math.min(1.25,drag.pitch+dy*0.006)); } });
+addEventListener('pointerup',e=>{ stage.classList.remove('drag'); if(!drag) return; const d=drag; drag=null; if(d.moved>4) return;
+  const t=e.target; const ph=t.closest&&t.closest('.ph');
+  if(ph){ const i=+ph.dataset.i; if(i===focal&&mode==='focus') openLB(i); else travel(i); return; }
+  if(t.classList&&t.classList.contains('hit')){ const a=+t.dataset.a, b=+t.dataset.b; if(a===focal) travel(b); else if(b===focal) travel(a); else { const pa=proj(a), pb=proj(b); travel(Math.hypot(pa[0]-e.clientX,pa[1]-e.clientY)<Math.hypot(pb[0]-e.clientX,pb[1]-e.clientY)?a:b); } return; }
+  if(t===stage||t===svg) { if(mode!=='map') zoomOut(); } });
+stage.addEventListener('wheel',e=>{ e.preventDefault(); userActed(); if(mode!=='map'&&e.deltaY>8){ zoomOut(); return; } if(mode!=='map') return; if(mode==='map'&&arrange==='grid'){ zoomGridAt(e.clientX,e.clientY,Math.exp(-Math.max(-120,Math.min(120,e.deltaY))*0.0012)); return; } goal.s*=Math.exp(-e.deltaY*0.0015); const b=baseS(); goal.s=Math.max(b*.6,Math.min(b*5,goal.s)); },{passive:false});
+addEventListener('keydown',e=>{ userActed(); if(e.key==='Escape'){ if($('#lb').classList.contains('open')) closeLB(); else if(mode==='map'&&arrange==='grid') toggleFlat(); else if(mode==='map'&&EMBED&&parent!==window){ try{ parent.postMessage({cl:'exit'},'*'); }catch(e){} } else zoomOut(); return; }
+  if(mode==='map'&&arrange==='grid'&&(e.key==='+'||e.key==='=')) zoomGridAt(innerWidth/2,innerHeight/2,1.4); if(mode==='map'&&arrange==='grid'&&e.key==='-') zoomGridAt(innerWidth/2,innerHeight/2,1/1.4);
+  if(e.key==='f'||e.key==='F') toggleFlat();
+  if(e.key==='ArrowLeft'||e.key==='Backspace') goBack();
+  if(e.key==='ArrowRight'&&focal>=0){ const nb=nbrs(focal).find(j=>!trail.includes(j)); travel(nb!=null?nb:nbrs(focal)[0]); } });
+function openLB(i){ const p=P[i]; $('#lb img').src=p.src; $('#lb h3').textContent=p.title; $('#lb .meta').textContent=[fd(p),place(p)||artist(p)||GEN[p.genre],p.award].filter(Boolean).join('  ·  ');
+  $('#lb .tags').innerHTML=[GEN[p.genre],LIGHT[p.light],artist(p),place(p)].filter(Boolean).map(t=>'<span>'+t+'</span>').join('');
+  const cam=(p.cam&&p.cam!=='None'&&p.cam!=='Camera TBD')?p.cam:''; const parts=(p.set||'').split(' · ').filter(Boolean); const lab=v=>/mm$/.test(v)?'Focal':/^f\//.test(v)?'Aperture':/s$/.test(v)?'Shutter':/^ISO/.test(v)?'ISO':'';
+  $('#lb .specs').innerHTML=(cam?'<div><b>'+cam+'</b><span>Shot on</span></div>':'')+parts.map(v=>'<div><b>'+v.replace(/^ISO /,'')+'</b><span>'+lab(v)+'</span></div>').join(''); $('#lb .specs').style.display=(cam||parts.length)?'':'none';
+  $('#lb').classList.add('open'); } function closeLB(){ $('#lb').classList.remove('open'); } $('#lb').onclick=closeLB;
+
+/* ---------- auto tour when nobody is touching it ---------- */
+let lastAct=-1e9, touring=false, tourNext=0, tourHops=0;
+function userActed(){ lastAct=performance.now(); if(touring){ touring=false; $('#status').innerHTML=''; } }
+addEventListener('pointermove',()=>{ if(touring) userActed(); else lastAct=performance.now(); });
+const HERO_ORDER=P.map((p,i)=>i).filter(i=>P[i].tier==='hero'); const tourSeen=new Set(); const tierScore=i=>P[i].tier==='hero'?3:P[i].tier==='site'?2:1;
+function tourStep(now){ if($('#lb').classList.contains('open')||$('#coach').classList.contains('on')){ lastAct=now; return; } if(!touring){ if(mode==='map'&&arrange==='grid'){ lastAct=now; return; } if(now-lastAct>3000){ touring=true; tourHops=0; tourNext=now; $('#status').innerHTML='<b>●</b> touring the best shots · move the mouse to take over'; } return; }
+  if(now<tourNext) return;
+  const nextHero=()=>HERO_ORDER.find(i=>active.has(i)&&!tourSeen.has(i));
+  const go=i=>{ tourSeen.add(i); travel(i,false,true); };
+  if(mode!=='focus'){ let h=nextHero(); if(h==null){ tourSeen.clear(); h=nextHero(); } go(h!=null?h:[...active][0]); tourHops=0; tourNext=now+4500; return; }
+  tourSeen.add(focal);
+  // follow links toward strong, unseen photos; after a few hops, fly to the next best shot
+  const cand=nbrs(focal).filter(j=>!tourSeen.has(j)).sort((a,b)=>(tierScore(b)*2+S[focal][b])-(tierScore(a)*2+S[focal][a]));
+  if(tourHops>=4||!cand.length||tierScore(cand[0])<2){ const h=nextHero(); if(h==null){ tourSeen.clear(); zoomOut(true); tourNext=now+3750; return; } go(h); tourHops=0; tourNext=now+4500; return; }
+  go(cand[0]); tourHops++; tourNext=now+3750; }
+
+/* ---------- render ---------- */
+let W,H,cx,cy; const D=1600;
+function P3(x,y,z){ const cY=Math.cos(cam.yaw),sY=Math.sin(cam.yaw),cP=Math.cos(cam.pitch),sP=Math.sin(cam.pitch); const dx=x-cam.x, dy=y-cam.y, dz=z-cam.z; const x1=dx*cY-dz*sY, z1=dx*sY+dz*cY; const y2=dy*cP+z1*sP, z2=-dy*sP+z1*cP; const f=D/Math.max(250,D+z2); return [cx+x1*f*cam.s, cy+y2*f*cam.s, f, z2]; }
+function proj(i){ const w=el[i].w; return P3(w.x,w.y,w.z); }
+let last=performance.now();
+function frame(now){ const dt=Math.min(.05,(now-last)/1000); last=now; const k=1-Math.exp(-dt*3.6); W=innerWidth; H=innerHeight; const mob=W<760; cx=W/2; cy=H*(mob?.4:.47);
+  tourStep(now);
+  if(mode==='map'&&arrange==='cloud'&&!drag) goal.yaw+=dt*0.1;
+  const FLAT=mode==='map'&&arrange==='grid'&&GRID; if(GRID){ const gw=GRID.cols*CELL*gvGoal.s, gh=GRID.rows*CELL*gvGoal.s, W0=innerWidth, H0=innerHeight; const lo=(a,b)=>Math.min(a,b), hi=(a,b)=>Math.max(a,b); gvGoal.x=Math.max(lo(W0*.5-gw,(W0-gw)/2),Math.min(hi(W0*.5,(W0-gw)/2),gvGoal.x)); gvGoal.y=Math.max(lo(H0*.5-gh,(H0-gh)/2),Math.min(hi(H0*.5,(H0-gh)/2),gvGoal.y)); }
+  ['x','y','s'].forEach(q=>gv[q]+=(gvGoal[q]-gv[q])*Math.min(1,k*2)); const AR={}; if(FLAT){ const c=CELL*gv.s; Object.entries(GRID.g).forEach(([i,o])=>AR[i]={x:gv.x+o.gx*c,y:gv.y+o.gy*c,w:c-1,h:c-1}); }
+  $('#zoomctl').classList.toggle('on',!!FLAT); stage.classList.toggle('gridmode',!!FLAT);
+  $('#arr').classList.toggle('on',mode==='map');
+  ['x','y','z','s'].forEach(q=>cam[q]+=(goal[q]-cam[q])*k); cam.yaw+=(goal.yaw-cam.yaw)*(drag?.4:k); cam.pitch+=(goal.pitch-cam.pitch)*(drag?.4:k);
+  const L=layout(), base=baseS();
+  el.forEach((e,i)=>{ const t=L[i]; if(t){ e.w.x+=(t.x-e.w.x)*k; e.w.y+=(t.y-e.w.y)*k; e.w.z+=(t.z-e.w.z)*k; } e.vis+=((active.has(i)?1:0)-e.vis)*k; });
+  const PR=el.map((e,i)=>proj(i)); lastPR=PR;
+  const NB=mode==='focus'?nbrs(focal):[], hn=hover>=0&&mode!=='focus'?nbrs(hover):[], CL=mode==='cluster'?clusterSet:null;
+  const zoomK=cam.s/base; let focusAmt=mode==='focus'?Math.max(0,Math.min(1,(zoomK-1.15)/1.1)):0;
+  if(mode==='focus'){ const left=Math.hypot(goal.x-cam.x,goal.y-cam.y,goal.z-cam.z)/travelD; const arrive=Math.max(0,Math.min(1,(1-left-.35)/.5)); const ease=arrive*arrive*(3-2*arrive); focusAmt=Math.min(focusAmt,ease); }
+  let fW=0,fh=0;
+  if(mode==='focus'){ const fH=Math.min(H*(mob?.32:.5),540); fW=Math.min(fH*el[focal].ar,W*(mob?.8:.4)); fh=fW/el[focal].ar; const g=.35+.65*focusAmt; fW*=g; fh*=g; }
+  const ring={x:Math.max(fW/2+(mob?60:190),W*(mob?.36:.31)),y:Math.max(fh/2+(mob?80:120),H*(mob?.3:.34))};
+  const angs={}; if(NB.length){ const arr=NB.map(j=>({j,a:Math.atan2(PR[j][1]-PR[focal][1],PR[j][0]-PR[focal][0])})).sort((a,b)=>a.a-b.a); const gap=Math.PI*2/arr.length*.85;
+    for(let pass=0;pass<5;pass++) for(let q=0;q<arr.length;q++){ const a=arr[q], b=arr[(q+1)%arr.length]; let d=b.a-a.a; if(q===arr.length-1) d+=Math.PI*2; if(d<gap){ const m=(gap-d)/2; a.a-=m; b.a+=m; } }
+    arr.forEach(o=>{ let a=Math.atan2(Math.sin(o.a),Math.cos(o.a)); const off=a-Math.PI/2; if(Math.abs(off)<0.62) a=Math.PI/2+(off<0?-0.62:0.62); angs[o.j]=a; }); }
+  const nbH=mob?70:Math.min(150,H*.17);
+  let lines='', hits='';
+  if(!FLAT) EDGES.forEach(([a,b])=>{ if(!active.has(a)||!active.has(b)) return; if(CL&&!(CL.has(a)&&CL.has(b))) return; const hot=hover>=0&&mode!=='focus'&&(a===hover||b===hover); const fa=PR[a][2], fb=PR[b][2]; const op=(hot?.8:(CL?.22:(.03+.09*Math.min(1,Math.max(0,(fa+fb)/2-.6)))))*(mode==='focus'?.6:1);
+    lines+='<line x1="'+PR[a][0].toFixed(1)+'" y1="'+PR[a][1].toFixed(1)+'" x2="'+PR[b][0].toFixed(1)+'" y2="'+PR[b][1].toFixed(1)+'" style="stroke-opacity:'+op.toFixed(3)+'"'+(hot?' class="hot"':'')+'/>';
+    if(mode!=='focus') hits+='<line class="hit" data-a="'+a+'" data-b="'+b+'" x1="'+PR[a][0].toFixed(1)+'" y1="'+PR[a][1].toFixed(1)+'" x2="'+PR[b][0].toFixed(1)+'" y2="'+PR[b][1].toFixed(1)+'"/>'; });
+  el.forEach((e,i)=>{ const pr=PR[i], f=pr[2]; let T, op, z=Math.round(1500-pr[3]);
+    if(FLAT){ const r=AR[i]; if(r){ const big=i===hover?1.12:1; T={x:r.x-(r.w*(big-1))/2,y:r.y-(r.h*(big-1))/2,w:r.w*big,h:r.h*big}; op=hover<0?1:(i===hover||hn.includes(i)?1:.3); z=i===hover?3000:(hn.includes(i)?2900:1000); } else { T={x:pr[0],y:pr[1],w:0,h:0}; op=0; } }
+    else if(i===focal&&mode==='focus'){ T={x:pr[0]-fW/2,y:pr[1]-fh/2,w:fW,h:fh}; op=1; z=3300; }
+    else if(NB.includes(i)){ const a=angs[i]; const tx=cx+Math.cos(a)*ring.x, ty=cy+Math.sin(a)*ring.y; const x=pr[0]+(tx-pr[0])*focusAmt, y=pr[1]+(ty-pr[1])*focusAmt;
+      const h=nbH*(hover===i?1.1:1)*(.4+.6*focusAmt), w=Math.min(h*e.ar,nbH*1.6), hh=w/e.ar; T={x:x-w/2,y:y-hh/2,w,h:hh}; op=1; z=3200; }
+    else if(CL){ const fog=Math.min(1,Math.max(.18,(f-.55)/.7)); if(CL.has(i)){ const h=Math.min(mob?90:170,H*.2)*Math.min(1.15,Math.max(.75,f))*(i===hover?1.08:1), w=h*e.ar; T={x:pr[0]-w/2,y:pr[1]-h/2,w,h}; op=1; z=2000+Math.round(1000-pr[3]); }
+      else { const h=22*f, w=h*e.ar; T={x:pr[0]-w/2,y:pr[1]-h/2,w,h}; op=.1*fog; } }
+    else { const big=i===hover?1.6:(hn.includes(i)?1.15:1); const h=Math.min(150,(mode==='focus'?24:Math.max(26,Math.min(90,46*zoomK)))*Math.min(f,1.6)*big); const w=h*e.ar; T={x:pr[0]-w/2,y:pr[1]-h/2,w,h};
+      const fog=Math.min(1,Math.max(.18,(f-.55)/.7)); op=mode==='focus'?.25*fog:(hover<0?fog:(i===hover||hn.includes(i)?1:.15*fog)); if(i===hover) z=3000; else if(hn.includes(i)) z=2900; }
+    op*=e.vis; e.T=T; e.op=op; e.z=z; });
+  // keep photos from piling on top of each other: push overlapping ones apart on screen
+  if(CL){ const R=el.filter((e,i)=>e.op>.5); const pad=14;
+    for(let it=0;it<10;it++) for(let a=0;a<R.length;a++) for(let b=a+1;b<R.length;b++){ const A=R[a].T, B=R[b].T; const ox=Math.min(A.x+A.w,B.x+B.w)-Math.max(A.x,B.x)+pad, oy=Math.min(A.y+A.h,B.y+B.h)-Math.max(A.y,B.y)+pad; if(ox<=0||oy<=0) continue;
+      if(ox<oy){ const d=(A.x+A.w/2<B.x+B.w/2?-1:1)*ox/2; A.x+=d; B.x-=d; } else { const d=(A.y+A.h/2<B.y+B.h/2?-1:1)*oy/2; A.y+=d; B.y-=d; } } }
+  whyEls.forEach(w=>w.style.opacity=0);
+  if(mode==='focus'){ NB.forEach((j,q)=>{ const e=el[j]; if(!e.c) return; const x2=e.c.x+e.c.w/2, y2=e.c.y+e.c.h/2, x1=PR[focal][0], y1=PR[focal][1]; const hot=hover===j;
+      const dx=x2-x1, dy=y2-y1; const tEdge=Math.min(1,Math.abs((fW/2+6)/(dx||1e-6)),Math.abs((fh/2+6)/(dy||1e-6))); const tl=Math.min(.75,Math.max(tEdge+.06,(tEdge+.75)/2));
+      const sx=x1+dx*tEdge, sy=y1+dy*tEdge;
+      lines+='<line class="f'+(hot?' hot':'')+'" style="stroke-opacity:'+(.3+.6*focusAmt).toFixed(2)+'" x1="'+sx.toFixed(1)+'" y1="'+sy.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'"/>';
+      hits+='<line class="hit" data-a="'+focal+'" data-b="'+j+'" x1="'+sx.toFixed(1)+'" y1="'+sy.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'"/>';
+      const wl=whyEls[q]; wl.textContent=reason(focal,j); wl.style.left=(x1+dx*tl)+'px'; wl.style.top=(y1+dy*tl)+'px'; wl.style.opacity=focusAmt; wl.classList.toggle('hot',hot); }); }
+  if(FLAT&&hover>=0&&AR[hover]){ const c=i=>[AR[i].x+AR[i].w/2,AR[i].y+AR[i].h/2]; const [x1,y1]=c(hover); hn.forEach(j=>{ if(!AR[j]) return; const [x2,y2]=c(j); lines+='<line class="hot" x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" style="stroke-opacity:.8"/>'; }); }
+  svg.innerHTML=lines+hits;
+  el.forEach((e,i)=>{ const T=e.T; if(!e.c) e.c={...T,o:0}; const kk=Math.min(1,k*1.8); ['x','y','w','h'].forEach(q=>e.c[q]+=(T[q]-e.c[q])*kk); e.c.o+=(e.op-e.c.o)*k;
+    const s=e.d.style; s.transform='translate3d('+e.c.x.toFixed(1)+'px,'+e.c.y.toFixed(1)+'px,0)'; s.width=Math.max(0,e.c.w).toFixed(1)+'px'; s.height=Math.max(0,e.c.h).toFixed(1)+'px'; s.opacity=e.c.o.toFixed(3); s.zIndex=e.z; s.pointerEvents=e.c.o>.05?'':'none';
+    if(!e.full&&e.c.h>200){ e.full=1; const im=new Image(); im.onload=()=>{ e.d.firstChild.src=P[i].src; }; im.src=P[i].src; }
+    e.d.classList.toggle('lab',!!FLAT&&e.c.w>150); if(!e.d.dataset.t) e.d.dataset.t=P[i].title;
+    e.d.classList.toggle('focal',i===focal&&mode==='focus'); e.d.classList.toggle('nb',NB.includes(i)); });
+  // cluster names: sit just above their photos, biggest groups win when names would collide
+  { const placed=[]; const fr=mode==='focus'?{x:PR[focal][0]-fW/2,y:PR[focal][1]-fh/2,w:fW,h:fh+60}:null;
+    regions.slice().sort((a,b)=>b.ix.length-a.ix.length).forEach(r=>{ const ms=r.ix.filter(i=>active.has(i)&&el[i].T); if(!ms.length||mode==='cluster'&&curCluster===r.name||FLAT){ r.d.style.opacity=0; r.d.style.pointerEvents='none'; return; }
+      const xs=ms.map(i=>el[i].T.x+el[i].T.w/2), x=xs.reduce((a,b)=>a+b,0)/xs.length, y=Math.min(...ms.map(i=>el[i].T.y))-14; const w=r.name.length*7.2+44, h=34; const box={x:x-w/2,y:y-h/2,w,h};
+      const hitsOther=placed.some(b=>box.x<b.x+b.w&&box.x+box.w>b.x&&box.y<b.y+b.h&&box.y+box.h>b.y)||(fr&&box.x<fr.x+fr.w&&box.x+box.w>fr.x&&box.y<fr.y+fr.h&&box.y+box.h>fr.y)||(mode==='focus'&&NB.some(j=>{ const T=el[j].T; return box.x<T.x+T.w&&box.x+box.w>T.x&&box.y<T.y+T.h&&box.y+box.h>T.y; }));
+      const depth=Math.min(1,Math.max(.25,(P3(...['x','y','z'].map(q=>ms.reduce((a,i)=>a+el[i].w[q],0)/ms.length))[2]-.55)/.6));
+      const crowd=mode==='map'&&!FLAT&&(placed.length>=7||depth<.6);
+      const op=(hitsOther||crowd)?0:(mode==='focus'?.45:mode==='cluster'?.5:(hover<0?1:.3))*depth; r.d.style.left=x+'px'; r.d.style.top=y+'px'; r.d.style.opacity=op.toFixed(2); r.d.style.pointerEvents=op>.15?'auto':'none'; if(op>0) placed.push(box); }); }
+  $('#ctitle').style.opacity=mode==='cluster'?1:0;
+  drawMini(now);
+  $('#cap').style.opacity=focusAmt; if(mode==='focus') $('#cap').style.top=(PR[focal][1]+fh/2+18)+'px';
+  if(mode!=='focus'&&hover>=0){ const p=P[hover]; $('#mapcap b').textContent=p.title; $('#mapcap span').textContent=[fd(p),place(p)||artist(p)].filter(Boolean).join(' · '); $('#mapcap').classList.add('on'); } else $('#mapcap').classList.remove('on');
+  requestAnimationFrame(frame); }
+
+
+/* ---------- grid: flatten the cloud from whatever angle you're looking at, then pan and zoom it like a map ---------- */
+let arrange='cloud', GRID=null, lastPR=null; const gv={x:0,y:0,s:1}, gvGoal={x:0,y:0,s:1}; const CELL=120;
+function snapGrid(){ const ids=[...active].filter(i=>lastPR&&lastPR[i]); const n=ids.length, W=innerWidth, H=innerHeight; const mob=W<760, top=mob?70:84, bot=mob?110:96, W2=W-(mob?24:80), H2=H-top-bot;
+  const cols=Math.max(1,Math.round(Math.sqrt(n*W2/H2))), rows=Math.ceil(n/cols); const byY=ids.slice().sort((a,b)=>lastPR[a][1]-lastPR[b][1]); const g={};
+  for(let r=0;r<rows;r++){ const row=byY.slice(r*cols,(r+1)*cols).sort((a,b)=>lastPR[a][0]-lastPR[b][0]); const off=(cols-row.length)/2; row.forEach((i,k)=>g[i]={gx:k+off,gy:r}); }
+  GRID={g,cols,rows}; fitGrid(true); }
+function fitGrid(instant){ if(!GRID) return; const W=innerWidth,H=innerHeight, mob=W<760, top=mob?70:84, bot=mob?110:96; const s=Math.min((W-(mob?24:80))/(GRID.cols*CELL),(H-top-bot)/(GRID.rows*CELL));
+  gvGoal.s=s; gvGoal.x=(W-GRID.cols*CELL*s)/2; gvGoal.y=top+(H-top-bot-GRID.rows*CELL*s)/2; if(instant) Object.assign(gv,gvGoal); }
+function zoomGridAt(px,py,f){ const b=GRID?Math.min((innerWidth-80)/(GRID.cols*CELL),(innerHeight-180)/(GRID.rows*CELL)):1; const s1=Math.max(b*.8,Math.min(b*5,gvGoal.s*f)); gvGoal.x=px-(px-gvGoal.x)*(s1/gvGoal.s); gvGoal.y=py-(py-gvGoal.y)*(s1/gvGoal.s); gvGoal.s=s1; }
+function setArrange(a){ arrange=a; $('#flat').innerHTML=(a==='grid'?'Back to cloud':'Flatten to grid')+' <kbd>F</kbd>'; if(a==='grid') snapGrid(); }
+function toggleFlat(){ userActed(); if(mode!=='map') zoomOut(); setArrange(arrange==='grid'?'cloud':'grid'); }
+$('#flat').onclick=toggleFlat;
+document.querySelectorAll('#zoomctl button').forEach(b=>b.onclick=()=>{ userActed(); const z=+b.dataset.z; if(!z) fitGrid(); else zoomGridAt(innerWidth/2,innerHeight/2,z>0?1.6:1/1.6); });
+
+/* ---------- links: every photo and group has its own address ---------- */
+const slug=t=>t.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+function setHash(h){ try{ history.replaceState(null,'',h); }catch(e){} if(EMBED&&parent!==window) try{ parent.postMessage({cl:'hash',h},'*'); }catch(e){} }
+
+/* ---------- minimap: a small globe of the groups, showing where you are ---------- */
+const mini=$('#mini canvas'), mg=mini.getContext('2d');
+function groups(){ const m={}; [...active].forEach(i=>{ const c=cluster(P[i]); (m[c]=m[c]||[]).push(i); }); return Object.entries(m).map(([name,ix])=>({name,ix})); }
+let MG=null, MGkey='';
+function drawMiniGrid(){ const S2=mini.width; mg.clearRect(0,0,S2,S2); const pad=14, c=Math.min((S2-pad*2)/GRID.cols,(S2-pad*2)/GRID.rows), ox=(S2-GRID.cols*c)/2, oy=(S2-GRID.rows*c)/2;
+  mg.fillStyle='rgba(20,20,24,.85)'; mg.beginPath(); mg.roundRect?mg.roundRect(4,4,S2-8,S2-8,18):mg.rect(4,4,S2-8,S2-8); mg.fill();
+  Object.entries(GRID.g).forEach(([i,o])=>{ const p=P[i]; mg.fillStyle=/^#[0-9a-f]{6}$/i.test(p.swatch||'')?p.swatch:'#555'; mg.globalAlpha=focal==+i?1:.85; mg.fillRect(ox+o.gx*c+.5,oy+o.gy*c+.5,c-1,c-1); }); mg.globalAlpha=1;
+  // the part of the grid you're looking at
+  const k=c/(CELL*gv.s); const vx=ox+(0-gv.x)*k, vy=oy+(0-gv.y)*k, vw=innerWidth*k, vh=innerHeight*k; mg.strokeStyle='rgba(233,165,74,.95)'; mg.lineWidth=2.5; mg.strokeRect(vx,vy,vw,vh);
+  miniGridMap={ox,oy,c}; $('#mini .where').innerHTML='Grid · drag to move'; }
+let miniGridMap=null, miniDrag=null;
+function drawMini(now){ if(mode==='map'&&arrange==='grid'&&GRID){ drawMiniGrid(); return; } if(MGkey!==filterKey){ MG=groups(); MGkey=filterKey; }
+  const S2=mini.width, c=S2/2, R=S2*.42, L=layout(); mg.clearRect(0,0,S2,S2);
+  mg.beginPath(); mg.arc(c,c,R,0,Math.PI*2); mg.fillStyle='rgba(20,20,24,.85)'; mg.fill(); mg.strokeStyle='rgba(236,233,227,.18)'; mg.lineWidth=1.5; mg.stroke();
+  const cY=Math.cos(cam.yaw),sY=Math.sin(cam.yaw),cP=Math.cos(cam.pitch),sP=Math.sin(cam.pitch);
+  const pr=(x,y,z)=>{ const k=1/L._R*.85; const dx=x*k,dy=y*k,dz=z*k; const x1=dx*cY-dz*sY, z1=dx*sY+dz*cY; const y2=dy*cP+z1*sP, z2=-dy*sP+z1*cP; const m=Math.hypot(x1,y2,z2), s=m>1?1/m:1; return [c+x1*s*R, c+y2*s*R, z2]; };
+  // equator ring for orientation
+  mg.beginPath(); for(let t=0;t<=64;t++){ const a=t/64*Math.PI*2; const p=pr(Math.cos(a)*L._R*1.2,0,Math.sin(a)*L._R*1.2); t?mg.lineTo(p[0],p[1]):mg.moveTo(p[0],p[1]); } mg.strokeStyle='rgba(236,233,227,.07)'; mg.stroke();
+  const here=mode==='focus'?cluster(P[focal]):(mode==='cluster'?curCluster:null);
+  const pts=MG.map(g=>{ const ix=g.ix.filter(i=>L[i]); const p=pr(...['x','y','z'].map(q=>ix.reduce((a,i)=>a+L[i][q],0)/ix.length)); return {g,p}; }).sort((a,b)=>b.p[2]-a.p[2]);
+  pts.forEach(({g,p})=>{ const on=g.name===here; const r=(3+Math.sqrt(g.ix.length)*2.2)*(on?1.25:1); const back=p[2]>0; mg.beginPath(); mg.arc(p[0],p[1],r,0,Math.PI*2);
+    const col=P[g.ix[0]].genre==='stage'?'217,114,95':P[g.ix[0]].genre==='wild'?'127,179,138':'127,159,214'; mg.fillStyle='rgba('+col+','+(on?1:back?.25:.7)+')'; mg.fill();
+    if(on){ mg.beginPath(); mg.arc(p[0],p[1],r+6+Math.sin(now/300)*2,0,Math.PI*2); mg.strokeStyle='rgba(233,165,74,.9)'; mg.lineWidth=2; mg.stroke(); } g._p=p; g._r=r; });
+  $('#mini .where').innerHTML=here?'<b>'+here+'</b>':(filterKey==='all'?'Full map':FILTERS.find(f=>f[0]===filterKey)[1]);
+}
+mini.addEventListener('pointerdown',e=>{ e.preventDefault(); e.stopPropagation(); userActed(); miniDrag={x:e.clientX,y:e.clientY,yaw:goal.yaw,pitch:goal.pitch,moved:0}; mini.setPointerCapture(e.pointerId); if(mode==='map'&&arrange==='grid') miniPan(e); });
+mini.addEventListener('pointermove',e=>{ if(!miniDrag) return; const dx=e.clientX-miniDrag.x, dy=e.clientY-miniDrag.y; miniDrag.moved=Math.max(miniDrag.moved,Math.hypot(dx,dy)); userActed();
+  if(mode==='map'&&arrange==='grid') miniPan(e); else if(miniDrag.moved>3){ goal.yaw=miniDrag.yaw+dx*0.014; goal.pitch=Math.max(-1.25,Math.min(1.25,miniDrag.pitch+dy*0.014)); } });
+mini.addEventListener('pointerup',e=>{ const d=miniDrag; miniDrag=null; if(d&&d.moved>3) mini._skipClick=true; });
+function miniPan(e){ if(!miniGridMap) return; const b=mini.getBoundingClientRect(), k=mini.width/b.width, x=(e.clientX-b.left)*k, y=(e.clientY-b.top)*k; const {ox,oy,c}=miniGridMap; const wx=(x-ox)/c*CELL*gvGoal.s, wy=(y-oy)/c*CELL*gvGoal.s; gvGoal.x=innerWidth/2-wx; gvGoal.y=innerHeight/2-wy; }
+mini.addEventListener('click',e=>{ if(mini._skipClick){ mini._skipClick=false; return; } if(mode==='map'&&arrange==='grid') return; userActed(); const b=mini.getBoundingClientRect(), k=mini.width/b.width, x=(e.clientX-b.left)*k, y=(e.clientY-b.top)*k; let best=null,bd=1e9; MG.forEach(g=>{ if(!g._p) return; const d=Math.hypot(g._p[0]-x,g._p[1]-y); if(d<bd&&d<g._r+14){ bd=d; best=g; } });
+  if(!best){ zoomOut(); return; } const r=regions.find(r=>r.name===best.name); if(r) enterCluster(r); else travel(best.ix.find(i=>P[i].tier==='hero')??best.ix[0]); });
+
+/* ---------- start: the full map, then it dives into your #1 selected shot ---------- */
+layout(); buildRegions(); EDGES=edgeList(); { const L=layout(); el.forEach((e,i)=>{ e.w={x:L[i].x,y:L[i].y,z:L[i].z}; }); fitMap(); Object.assign(cam,goal); cam.s=goal.s*.7; }
+lastAct=performance.now();
+{ const h=decodeURIComponent(location.hash.slice(1)); const [kind,sl]=h.split('/');
+  if(kind==='p'&&P.findIndex(p=>slug(p.title)===sl)>=0) travel(P.findIndex(p=>slug(p.title)===sl),false,true);
+  else if(kind==='g'&&regions.find(r=>slug(r.name)===sl)) enterCluster(regions.find(r=>slug(r.name)===sl),true);
+  else if(kind==='map'){ mode='map'; }
+  else travel(HERO_ORDER[0],false,true);
+  hist=[]; $('#back').hidden=true; Object.assign(cam,goal); }
+setTimeout(()=>$('#hint').style.opacity=0,6000);
+{ let seen=false; try{ seen=localStorage.getItem('cl_coach')==='1'; }catch(e){}
+  const done=()=>{ $('#coach').classList.remove('on'); try{ localStorage.setItem('cl_coach','1'); }catch(e){} };
+  if(!seen){ $('#hint').style.display='none'; setTimeout(()=>$('#coach').classList.add('on'),1400); setTimeout(done,14000); $('#coach button').onclick=e=>{ e.stopPropagation(); done(); }; stage.addEventListener('pointerup',()=>setTimeout(done,600),{once:true}); } }
+requestAnimationFrame(frame);
+</script></body></html>
