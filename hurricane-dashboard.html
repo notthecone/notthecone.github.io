@@ -1,0 +1,323 @@
+<!doctype html><html><head><script>
+(function(){
+  const realFetch=window.fetch.bind(window), realNow=Date.now.bind(Date);
+  let R=null,i=0,playing=true,speed=1,frameStart=realNow();
+  const ready=realFetch('dash-replay.json').then(r=>r.json()).then(j=>{R=j;build();show();});
+  Date.now=()=>R?R.frames[i].at*1000+Math.min(R.every*1000,(realNow()-frameStart)*speed):realNow();
+  const resp=o=>new Response(JSON.stringify(o),{status:200,headers:{'Content-Type':'application/json'}});
+  window.fetch=async(url,opt)=>{ const u=String(url&&url.url||url);
+    if(opt&&opt.method&&opt.method.toUpperCase()==='POST'){ return resp({ok:false,error:'Replay: buttons are off in this read-only copy',msg:'Replay: buttons are off in this read-only copy'}); }
+    if(u.indexOf('/api/')===-1) return realFetch(url,opt);
+    await ready;
+    if(u.indexOf('/api/state')>-1) return resp(R.frames[i].state);
+    if(u.indexOf('/api/think')>-1){ const sym=new URL(u,location.href).searchParams.get('symbol'); for(let k=i;k>=0;k--){ const t=R.frames[k].think; if(t&&t[sym]) return resp(t[sym]); } return resp({ok:false}); }
+    return resp({ok:false}); };
+  function refresh(){ try{ window.tick&&window.tick(); }catch(e){} try{ window.thinkTick&&window.thinkTick(); }catch(e){} }
+  function step(){ if(!R) return; if(playing){ if(i<R.frames.length-1){ i++; } else { i=0; } frameStart=realNow(); show(); refresh(); } setTimeout(step,R?R.every*1000/speed:1000); }
+  let bar,rng,lab,pb,sb;
+  function build(){ bar=document.createElement('div'); bar.id='replaybar';
+    bar.innerHTML='<button type="button" id="rp-play" title="Play or pause">❚❚</button><input id="rp-rng" type="range" min="0" value="0"><span id="rp-lab"></span><button type="button" id="rp-speed">1×</button><span id="rp-note">Real bot + real dashboard, holdout season 10 on our mock exchange, 4× speed · read-only</span>';
+    document.body.appendChild(bar); const st=document.createElement('style');
+    st.textContent='#replaybar{position:fixed;left:0;right:0;bottom:0;z-index:99999;display:flex;align-items:center;gap:12px;padding:10px 16px;background:rgba(12,12,14,.96);border-top:1px solid #2a2a30;font:12px ui-monospace,Menlo,monospace;color:#c9c5bd}#replaybar button{all:unset;cursor:pointer;border:1px solid #3a3a42;border-radius:999px;padding:4px 12px;color:#ece9e3}#replaybar button:hover{border-color:#e9a54a;color:#e9a54a}#rp-rng{flex:1;accent-color:#e9a54a}#rp-note{color:#8f8b84}body{padding-bottom:56px!important}@media(max-width:700px){#rp-note{display:none}}';
+    document.head.appendChild(st); rng=bar.querySelector('#rp-rng'); lab=bar.querySelector('#rp-lab'); pb=bar.querySelector('#rp-play'); sb=bar.querySelector('#rp-speed'); rng.max=R.frames.length-1;
+    rng.oninput=()=>{ i=+rng.value; frameStart=realNow(); show(); refresh(); };
+    pb.onclick=()=>{ playing=!playing; pb.textContent=playing?'❚❚':'▶'; };
+    sb.onclick=()=>{ speed=speed===1?4:speed===4?10:1; sb.textContent=speed+'×'; };
+    setTimeout(step,R.every*1000); }
+  function show(){ if(!rng) return; rng.value=i; const s=Math.round(R.frames[i].at-R.frames[0].at), m=Math.floor(s/60); lab.textContent=m+':'+String(s%60).padStart(2,'0')+' / '+Math.round((R.frames[R.frames.length-1].at-R.frames[0].at)/60)+' min'; }
+})();
+</script><meta charset="utf-8"><title>CLNR dashboard · replay</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--bg:#0e1116;--panel:#161b22;--line:#262d38;--tx:#d6dde6;--mut:#7d8896;--g:#2ea043;--r:#e5534b;--gr:#6e7681;--y:#d4a72c;--b:#4c9aff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.35 ui-monospace,Menlo,Consolas,monospace}
+header{display:flex;gap:18px;flex-wrap:wrap;align-items:center;padding:10px 14px;background:var(--panel);border-bottom:1px solid var(--line)}
+header .k{color:var(--mut);font-size:11px;display:block}header .v{font-size:16px;font-weight:700}
+.status{padding:3px 10px;border-radius:4px;font-weight:700}.ok{background:#12351c;color:#56d364}.bad{background:#5b1a17;color:#ff7b72}
+main{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:12px;padding:12px}
+@media(max-width:1200px){main{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px;margin-bottom:12px}
+h2{margin:0 0 8px;font-size:12px;letter-spacing:.08em;color:var(--mut);text-transform:uppercase}
+table{width:100%;border-collapse:collapse}th,td{padding:3px 6px;text-align:right;white-space:nowrap}th{color:var(--mut);font-weight:400;font-size:11px}
+td:first-child,th:first-child{text-align:left}tr.row{cursor:pointer;border-top:1px solid var(--line)}tr.row:hover,tr.sel{background:#1d2430}
+.green{color:var(--g)}.red{color:var(--r)}.grey{color:var(--gr)}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+.dot.green{background:var(--g)}.dot.red{background:var(--r)}.dot.grey{background:var(--gr)}
+.bar{position:relative;width:110px;height:10px;background:#0b0e13;border:1px solid var(--line);display:inline-block;vertical-align:middle}
+.bar i{position:absolute;top:0;bottom:0}.bar b{position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--mut)}
+.bars div{margin:1px 0}.bars span{font-size:10px;color:var(--mut);display:inline-block;width:20px}
+.news{max-height:340px;overflow:auto}.n{padding:4px 6px;border-left:3px solid var(--line);margin-bottom:4px}
+.n small{color:var(--mut)}.n.damage{border-color:var(--y)}.n.adv{border-color:var(--b)}
+.ann{background:#7a1fa2;color:#fff;border:2px solid #ffd33d;padding:8px;margin-bottom:8px;font-size:15px;font-weight:700;animation:bl 1s infinite alternate}
+@keyframes bl{from{background:#7a1fa2}to{background:#b0201f}}
+.ann button{margin-left:8px}
+button{background:#232b36;color:var(--tx);border:1px solid var(--line);border-radius:4px;padding:4px 9px;cursor:pointer;font:inherit}
+button:hover{border-color:var(--b)}button.danger{background:#5b1a17;border-color:#8b2a25}button.warn{background:#4a3a0e;border-color:#7a6118}
+input,select{background:#0b0e13;color:var(--tx);border:1px solid var(--line);border-radius:4px;padding:4px;font:inherit}
+input[type=number]{width:80px}.err{color:#ff7b72;margin-top:6px;min-height:16px;white-space:pre-wrap}
+.flex{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px}.mut{color:var(--mut)}
+.why td{text-align:left;padding:2px 10px 2px 0}.yes{color:var(--g);font-weight:700}.no{color:var(--r);font-weight:700}
+pre{margin:0;white-space:pre-wrap;word-break:break-all}
+#alerts{display:flex;gap:8px;flex-wrap:wrap;padding:8px 14px;background:var(--bg);border-bottom:1px solid var(--line)}
+.al{padding:4px 10px;border-radius:4px;font-weight:700}.al.bad{background:#5b1a17;color:#ff7b72}.al.warn{background:#4a3a0e;color:#f2cc60}.al.ok{background:#12351c;color:#56d364}
+.card{border:1px solid var(--line);border-radius:5px;padding:7px;margin-bottom:8px}.card.new{border:2px solid #ffd33d}
+.card.done{opacity:.65}.badge{display:inline-block;padding:1px 7px;border-radius:3px;font-size:11px;font-weight:700;margin-left:6px}
+.badge.on{background:#7a1fa2;color:#fff}.badge.off{background:#232b36;color:var(--mut)}
+.sg{margin:4px 0 4px 6px;font-size:12px}.sg code{background:#0b0e13;padding:1px 4px;border-radius:3px;user-select:all}.sg .note{color:var(--mut);font-size:11px}
+.chk td{text-align:left;padding:2px 8px 2px 0;white-space:normal}.chk .dot{margin-top:3px}.dot.amber{background:var(--y)}
+.seas td,.seas th{padding:2px 8px}.pos{color:var(--g)}.neg{color:var(--r)}
+#modal{display:none;position:fixed;inset:0;background:#000a;z-index:9;align-items:center;justify-content:center}
+#modal>div{background:var(--panel);border:1px solid var(--b);border-radius:8px;padding:14px;max-width:760px;width:92%;max-height:86vh;overflow:auto}
+#think svg{width:100%;height:auto;background:#0b0e13;border:1px solid var(--line);border-radius:4px}
+.tl{display:flex;height:16px;margin:6px 0 2px;border:1px solid var(--line);position:relative;font-size:10px}.tl div{overflow:hidden;white-space:nowrap;text-align:center;color:#000}
+.tl i{position:absolute;top:-3px;bottom:-3px;width:2px;background:#fff}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 14px}.kv>span:nth-child(odd){color:var(--mut)}
+.chip{display:inline-block;padding:1px 8px;border-radius:3px;font-weight:700;margin-right:6px}
+.chip.g{background:#12351c;color:#56d364}.chip.r{background:#5b1a17;color:#ff7b72}.chip.y{background:#4a3a0e;color:#f2cc60}.chip.n{background:#232b36;color:var(--mut)}
+.disabled{opacity:.55}.disabled input{cursor:not-allowed}.tag{font-size:10px;color:var(--y);border:1px solid #7a6118;border-radius:3px;padding:0 5px;margin-left:6px;text-transform:none;letter-spacing:0}
+.mini td,.mini th{padding:2px 8px}.mini td:first-child,.mini th:first-child{text-align:left}
+.rbar{position:relative;height:8px;background:#0b0e13;border:1px solid var(--line);margin-top:3px}.rbar i{position:absolute;left:0;top:0;bottom:0}
+.xchip{display:inline-block;background:#4a3a0e;border:1px solid #7a6118;border-radius:3px;padding:1px 6px;margin:0 6px 4px 0}.xchip a{cursor:pointer;margin-left:6px;color:#ff7b72}
+</style></head><body>
+<header id="hd">loading...</header>
+<div id="alerts"></div>
+<div id="modal"><div id="mbody"></div></div>
+<main><div>
+<div class="panel" id="botp"><h2>Bot status <span class="tag" id="botsrc"></span></h2><div id="bot"></div></div>
+<div class="panel"><h2>Symbols (click a row for the Why strip)</h2><table id="tbl"></table></div>
+<div class="panel" id="whyp"><h2>Why: <span id="whysym"></span></h2><div id="why" class="mut">click a symbol</div></div>
+<div class="panel"><h2>What is the bot thinking: <span id="thinksym"></span></h2><div id="think" class="mut">click a symbol</div></div>
+<div class="panel"><h2>PnL per season (logs/season_summary.csv)</h2><div id="seas" class="mut">no seasons settled yet</div></div>
+<div class="panel"><h2>PnL by component <span class="tag">APPROXIMATE</span></h2><div id="comp" class="mut">no fills yet</div></div>
+<div class="panel disabled" id="knobp"><h2>Risk knobs <span class="tag">DISABLED: read-only, design only</span></h2><div id="knobs"></div></div>
+</div><div>
+<div class="panel"><h2>Announcements</h2><div id="anns" class="mut">none seen</div></div>
+<div class="panel"><h2>Controls <span class="tag">each asks to confirm</span></h2>
+<div class="flex"><select id="csym"></select><button class="danger" id="cflat">FLATTEN</button><button id="cunflat">UNFLATTEN</button>
+<button class="danger" id="cflatarb">FLATTEN ARB only</button></div>
+<div class="flex"><button class="warn" id="cpause">PAUSE</button><button id="cresume">RESUME</button><button id="cunflatall">UNFLATTEN all</button></div>
+<div id="flatchips" class="mut"></div><div class="err" id="cerr"></div></div>
+<div class="panel"><h2>Explain / preview <span class="tag">writes nothing</span></h2>
+<div class="flex"><input id="exin" style="flex:1;min-width:180px" placeholder="FERRY outage_cost x1.5" autocomplete="off"><button id="exgo">Preview</button></div>
+<pre id="exout" class="mut" style="max-height:340px;overflow:auto;white-space:pre;word-break:normal;font-size:12px">type a symbol and a change, e.g. FERRY outage_cost x1.5 or HAVEN retention=500</pre><div class="err" id="exerr"></div></div>
+<div class="panel"><h2>ETF arb</h2><div id="arb" class="mut">...</div></div>
+<div class="panel"><h2>News cut</h2><div id="nc" class="mut">...</div></div>
+<div class="panel"><h2>Pre-trade checklist <button id="runchk" style="float:right">Run checks</button></h2><div id="chk" class="mut">not run yet</div></div>
+<div class="panel"><h2>News</h2><div class="news" id="news"></div></div>
+<div class="panel"><h2>Overrides (overrides.json)</h2><div id="ov"></div>
+<div class="flex"><select id="bsym"></select><select id="bmode"><option value="add">add $</option><option value="mult_pct">multiply %</option></select>
+<input id="bval" type="number" step="any" placeholder="-3 or +5"><button id="bapply">Fair bump</button></div>
+<div class="flex"><button id="bclear">Clear this symbol</button><button id="bclearall">Clear all</button></div>
+<div class="flex"><button class="warn" id="pause">PAUSE</button><button class="danger" id="flat">FLATTEN ALL</button>
+<span id="confirm" style="display:none"><span id="cq"></span> <button class="danger" id="cyes">Confirm</button> <button id="cno">Cancel</button></span></div>
+<div class="err" id="err"></div></div>
+</div></main>
+<script>
+let S=null, sel=null, pend=null;
+const $=id=>document.getElementById(id);
+const fx=(v,d=2)=>v==null?'-':Number(v).toFixed(d);
+const money=v=>v==null?'-':(v<0?'-':'')+'$'+Math.abs(v).toLocaleString(undefined,{maximumFractionDigits:0});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function bar(pos,lim){if(pos==null)return '<div class="bar"><b></b></div>';const w=Math.min(50,50*Math.abs(pos)/lim);
+ return `<div class="bar"><b></b><i style="${pos>=0?'left:50%':'right:50%'};width:${w}%;background:${pos>=0?'var(--g)':'var(--r)'}"></i></div> <span>${pos}</span>`;}
+function spark(pts){if(!pts||pts.length<2)return '';const W=120,H=26;const ys=pts.flatMap(p=>[p[1],p[2]]);let lo=Math.min(...ys),hi=Math.max(...ys);if(hi==lo){hi+=1e-6}
+ const x=t=>(t+180)/180*W,y=v=>H-2-(v-lo)/(hi-lo)*(H-4);
+ const path=i=>pts.map((p,k)=>(k?'L':'M')+x(p[0]).toFixed(1)+' '+y(p[i]).toFixed(1)).join('');
+ return `<svg width="${W}" height="${H}"><path d="${path(1)}" fill="none" stroke="#9aa5b1" stroke-width="1.3"/><path d="${path(2)}" fill="none" stroke="#4c9aff" stroke-width="1.3"/></svg>`;}
+function liveCell(i){
+ const k='<span class="k">exchange PnL (this season, live read)</span>';
+ if(i&&i.pnl_source==='unknown')return k+'<span class="v no">unknown</span> <small class="mut">'+esc(i.label||'')+'</small>';
+ if(!i||i.value==null)return k+'<span class="v">-</span>';
+ if(i.source==='orders_log')return k+'<span class="v">'+money(i.value)+' <small class="mut">order-log fallback, may lag the portal</small></span>';
+ const a=Math.round(i.age_s);
+ if(a>600)return k+'<span class="v mut">-</span> <small class="mut">bot not running (last read '+Math.round(a/60)+' min ago)</small>';
+ const sn=i.season!=null?' s'+i.season:'';
+ if(i.stale)return k+'<span class="v mut">'+money(i.value)+'</span> <small class="mut">stale '+a+'s'+sn+'</small>';
+ if(i.label&&i.pnl_source==='carried')return k+'<span class="v">'+money(i.value)+(i.halted?' <small class="no">HALTED</small>':'')+'</span> <small class="mut">'+esc(i.label)+sn+'</small>';
+ return k+'<span class="v">'+money(i.value)+(i.halted?' <small class="no">HALTED</small>':'')+' <small class="mut">'+a+'s ago'+sn+(i.pnl_source==='exchange_positions'?' (exchange positions)':'')+'</small></span>';}
+function render(){
+ const m=S.meta||{},b=S.bot,p=S.pnl;
+ $('hd').innerHTML=`<div><span class="k">bot</span><span class="v status ${b.stale?'bad':'ok'}">${b.status}${b.since_row_s!=null?' ('+fx(b.since_row_s,0)+'s)':''}</span></div>
+ <div><span class="k">season</span><span class="v">${m.season??'-'}</span></div><div><span class="k">round</span><span class="v">${m.round??'-'}</span></div>
+ <div><span class="k">phase</span><span class="v">${m.phase??'-'}</span></div><div><span class="k">storm age</span><span class="v">${m.age!=null?m.age+'s':'-'}</span></div>
+ <div>${liveCell(p.live_info)}</div>
+ <div><span class="k">shadow estimate (this season, mid-marked)</span><span class="v">${money(p.shadow_est)}</span></div>
+ <div><span class="k">last settled</span><span class="v">${p.settled?money(p.settled.settled_pnl)+' <small class="mut">s'+p.settled.season+' shadow '+money(p.settled.shadow_pnl)+'</small>':'-'}</span></div>
+ <div class="mut" style="max-width:260px">exchange PnL resets each season, it is not cumulative</div>
+ <div class="mut">${esc(S.run_file||'no run log')}</div>`;
+ let h='<tr><th>sym</th><th>bid</th><th>ask</th><th>mid</th><th>fair</th><th>gap $</th><th>gap %</th><th>gap/spr</th><th>positions (live / shadow)</th><th>target</th><th>mid vs fair 3m</th></tr>';
+ for(const r of S.symbols){const c=r.color;
+  h+=`<tr class="row ${sel==r.symbol?'sel':''}" onclick="sel='${r.symbol}';render()"><td><span class="dot ${c}"></span>${r.symbol}</td><td>${fx(r.bid)}</td><td>${fx(r.ask)}</td><td>${fx(r.mid)}</td><td>${fx(r.fair)}</td>
+  <td class="${c}">${r.gap==null?'-':(r.gap>0?'+':'')+fx(r.gap)}</td><td class="${c}">${fx(r.gap_pct,1)}</td><td class="${c}">${fx(r.gap_spreads,1)}</td>
+  <td class="bars"><div><span>live</span>${bar(r.live_pos,r.limit)}</div><div><span>shd</span>${bar(r.shadow_pos,r.limit)}</div></td><td>${r.target??'-'}</td><td>${spark(r.spark)}</td></tr>`;}
+ $('tbl').innerHTML=h;
+ const r=S.symbols.find(x=>x.symbol==sel);$('whysym').textContent=sel||'';
+ if(r&&r.why.available){const w=r.why;
+  $('why').innerHTML=`<table class="why"><tr><td>threshold</td><td>max(${fx(w.gap_scale,2)} x ${fx(w.base_gap)}, ${fx(w.spread_mult,1)} x spread ${fx(w.spread,3)}) = max(${fx(w.thr_base,3)}, ${fx(w.thr_spread,3)}) = <b>${fx(w.threshold,3)}</b> <span class="mut">(${w.thr_binding} binds)</span></td></tr>
+  <tr><td>gap</td><td>fair - mid = <b>${w.gap>0?'+':''}${fx(w.gap,3)}</b> -> |gap| ${w.clears?'<span class="yes">CLEARS</span>':'<span class="no">does not clear</span>'} the threshold (want to ${w.side})</td></tr>
+  <tr><td>entry window</td><td>storm age ${w.entry_start}-${w.entry_end}s, now ${w.phase} at ${w.age}s: ${w.in_window?'<span class="yes">OPEN</span>':'<span class="no">closed</span>'}</td></tr>
+  <tr><td>position</td><td>${w.position} shares, strategy target ${w.target??'-'}; damage report stage seen: ${w.stage||'none'}; ${w.holding_for_final?'<span class="yes">HOLDING, waiting for the final report</span>':'not waiting on a report'}</td></tr></table>`;
+ }else $('why').innerHTML='<span class="mut">'+(sel?'no data':'click a symbol')+'</span>';
+ renderAnns();renderAlerts();renderChecks();renderSeasons();renderV3();thinkTick();
+ $('news').innerHTML=S.news.map(n=>`<div class="n ${n.kind=='damage'?'damage':n.kind.startsWith('advisory')?'adv':''}"><small>R${n.round??'-'} ${esc(n.storm||'')} ${esc((n.time||'').slice(11,16))} ${esc(n.kind)}</small><br>${esc(n.text)}</div>`).join('')||'<span class="mut">no feed recording</span>';
+ const o=S.overrides.data||{};
+ $('ov').innerHTML=(S.overrides.ok?'':'<div class="no">'+esc(S.overrides.error)+'</div>')+`<pre>pause: ${o.pause?'<b class="no">TRUE</b>':'false'}\nflatten: ${esc(JSON.stringify(o.flatten||[]))}\nparams: ${esc(JSON.stringify(o.params||{}))}\nadj: ${esc(JSON.stringify(o.adj||{}))}</pre>`;
+ const bs=$('bsym');if(!bs.options.length){for(const s of S.symbols_list)bs.add(new Option(s,s));}
+ if(sel&&bs.dataset.syncedto!=sel){bs.value=sel;bs.dataset.syncedto=sel;}
+ $('pause').textContent=o.pause?'RESUME':'PAUSE';
+}
+
+const FZ={active:'FREEZE ON',ended_override:'freeze ended: override landed',ended_ack:'freeze ended: ACK',ended_timeout:'freeze ended: timeout',off:'freeze off',unknown:'freeze unknown'};
+function renderAlerts(){const a=S.alerts||[];
+ $('alerts').innerHTML=a.length?a.map(x=>`<span class="al ${x.level}">${esc(x.msg)}</span>`).join(''):'<span class="al ok">all clear</span>'
+  +` <span class="mut">orders last 60s: ${S.rate.used}/${S.rate.budget}</span>`;}
+function cdtext(f){if(f.state!=='active')return '';const left=Math.max(0,f.deadline-Date.now()/1000);return ' '+left.toFixed(0)+' s left';}
+function renderAnns(){const A=S.announcements||[];if(!A.length){$('anns').innerHTML='<span class="mut">none seen</span>';return}
+ $('anns').innerHTML=A.map(n=>{const f=n.freeze;f.deadline=S.now+(f.seconds_left||0);const open=!n.acked;
+  const sg=(n.suggestions||[]).map(g=>`<div class="sg"><b>${esc(g.label)}</b>${g.complete?'':' <span class="no">(fill in &lt;...&gt;, use the CLI)</span>'}`+
+   g.commands.map(c=>`<div><code>${esc(c.cli)}</code> ${c.ok&&open?`<button class="warn" onclick="prevApply(${n.seq},${g.sug},${c.i})">Preview + APPLY</button>`:''}</div>`).join('')+`<div class="note">${esc(g.note)}</div></div>`).join('')||'<div class="sg mut">no known pattern: decide by hand (docs/ANNOUNCEMENTS.md), conservative size</div>';
+  return `<div class="card ${open?'new':'done'}"><b>R${n.round??'?'} ${esc(n.storm||'')} ${esc((n.time||'').slice(11,19))}</b> <small class="mut">seq ${n.seq}</small>
+   <span class="badge ${f.state==='active'?'on':'off'}" data-fz="${f.deadline}" data-st="${f.state}">${FZ[f.state]||f.state}${cdtext(f)}</span>
+   <div style="font-size:14px;font-weight:700;margin:4px 0">${esc(n.headline)}</div>
+   <div>symbols: <b>${esc(n.symbols.join(', ')||'-')}</b></div>
+   <div class="sg"><span class="mut">fallback:</span> <code>${esc(n.headline_cmd)}</code></div>${sg}
+   <div class="flex">${open?`<button onclick="ackAsk(${n.seq})">ACK (news irrelevant, ends freeze)</button> <button onclick="ack(${n.seq})" title="hide only">dismiss</button>`:'<span class="mut">acknowledged</span>'}</div></div>`}).join('');}
+setInterval(()=>{document.querySelectorAll('[data-fz]').forEach(e=>{if(e.dataset.st!=='active')return;const l=Math.max(0,+e.dataset.fz-Date.now()/1000);e.textContent='FREEZE ON '+l.toFixed(0)+' s left'})},1000);
+function modal(html){$('mbody').innerHTML=html;$('modal').style.display='flex'}
+function closeModal(){$('modal').style.display='none'}
+async function prevApply(seq,sug,cmd){
+ const r=await fetch('/api/preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({seq,sug,cmd})});const j=await r.json();
+ if(!j.ok){modal(`<div class="no">REJECTED, nothing written: ${esc(j.error)}</div><div class="flex"><button onclick="closeModal()">Close</button></div>`);return}
+ modal(`<h2>Apply this override?</h2><div><b>${esc(j.headline)}</b></div><div style="margin:6px 0"><code>${esc(j.command)}</code></div>
+  <div class="mut">Fair-value change, formula only, mean over 15 representative states (the bot prints its exact change next step). Check the arrows match the headline.</div>
+  <pre>${esc(j.table)}</pre><pre class="mut">${esc(j.after)}</pre>
+  <div class="flex" style="margin-top:10px"><button class="danger" id="mapply">APPLY to overrides.json</button><button onclick="closeModal()">Cancel</button></div><div class="err" id="merr"></div>`);
+ $('mapply').onclick=async()=>{const r2=await fetch('/api/apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({seq,sug,cmd,confirm:true})});const j2=await r2.json();
+  if(!j2.ok){$('merr').textContent='REJECTED, nothing written: '+j2.error;return}closeModal();tick()}}
+function ackAsk(seq){modal(`<h2>ACK announcement ${seq}?</h2><div>Says the news does not change fair values. Writes an ack to overrides.json (same as <code>announce.py ack</code>) and the bot ends its freeze on the next step. Nothing else changes.</div>
+ <div class="flex" style="margin-top:10px"><button class="danger" id="mack">ACK</button><button onclick="closeModal()">Cancel</button></div><div class="err" id="merr"></div>`);
+ $('mack').onclick=async()=>{const r=await fetch('/api/ack',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({seq,confirm:true})});const j=await r.json();
+  if(!j.ok){$('merr').textContent='REJECTED: '+j.error;return}closeModal();tick()}}
+const CK={python:'packages',model:'model type',model_full:'full model file',data:'research data',key:'key accepted',positions:'positions flat',orders:'no resting orders',case:'case.json matches',overrides:'overrides neutral',state:'saved state',disk:'disk space',caffeinate:'macOS sleep',error:'checks'};
+function renderChecks(){const c=S.checks||{};const el=$('chk');
+ if(!c.at){el.innerHTML=c.running?'running...':'<span class="mut">not run yet (press Run checks; read-only exchange reads)</span>';return}
+ const col=l=>l==='ok'?'green':l==='WARN'?'amber':'red';
+ el.innerHTML=`<div style="margin-bottom:6px"><span class="status ${c.ready?'ok':'bad'}">${c.ready?'READY':'NOT READY'}</span> <span class="mut">${fx((Date.now()/1000-c.at),0)} s ago</span></div><table class="chk">`+
+  c.items.map(i=>`<tr><td><span class="dot ${col(i.level)}"></span><b>${esc(CK[i.key]||i.key)}</b></td><td class="${i.level==='FAIL'?'red':i.level==='WARN'?'':'mut'}">${esc(i.msg)}</td></tr>`).join('')+'</table>';}
+$('runchk').onclick=async()=>{$('chk').textContent='running...';await fetch('/api/checks',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});tick()};
+function renderSeasons(){const t=S.seasons||{rows:[]};if(!t.rows.length){$('seas').innerHTML='<span class="mut">no seasons settled yet</span>';return}
+ const cl=v=>v==null?'':v<0?'neg':'pos';
+ $('seas').innerHTML='<table class="seas"><tr><th>season</th><th>settled PnL</th><th>shadow PnL</th><th>settled - shadow</th><th>orders</th><th>time</th></tr>'+
+  t.rows.slice().reverse().map(r=>`<tr><td>${esc(r.season)}${r.holdout?' (holdout)':''}</td><td class="${cl(r.settled)}">${r.settled==null?'pending':money(r.settled)}${r.stable?'':' ~'}</td><td>${money(r.shadow)}</td><td>${r.settled==null||r.shadow==null?'-':money(r.settled-r.shadow)}</td><td>${r.orders??'-'}</td><td class="mut">${esc((r.wall||'').slice(5,16))}</td></tr>`).join('')+
+  `<tr style="border-top:1px solid var(--line)"><td><b>total</b> (${t.rows.length})</td><td class="${cl(t.total_settled)}"><b>${money(t.total_settled)}</b></td><td>${money(t.total_shadow)}</td><td></td><td></td><td></td></tr></table>`;}
+
+// ---------------------------------------------------------------- v3 panels
+const chip=(c,t)=>`<span class="chip ${c}">${t}</span>`;
+const onoff=(b,onT,offT)=>b==null?chip('n','?'):b?chip('g',onT):chip('n',offT);
+function renderV3(){renderBot();renderArb();renderNC();renderComp();renderKnobs();renderCtl()}
+function renderBot(){const p=S.panel;if(!p)return;const r=p.rate,f=p.flags,fz=p.freeze;
+ $('botsrc').textContent=p.status_file?'flags and settings: from the bot':'no status file: settings unknown, rest derived';
+ const unk='<span class="mut">unknown</span>';
+ const run=p.running===true?chip('g','RUNNING'):p.running===false?chip('r','NOT RUNNING'):chip('n','UNKNOWN');
+ const mode=p.mode==='live'?chip('y','LIVE ORDERS'):p.mode==='dry-run'?chip('n','DRY RUN'):chip('n','?');
+ const pctUsed=Math.min(100,100*r.per_min/r.team_budget),col=pctUsed>=80?'var(--r)':pctUsed>=55?'var(--y)':'var(--g)';
+ const arbT=f.arb==null?chip('n','?'):f.arb?chip('g','arb ON'+(f.arb_kind?' ('+esc(f.arb_kind)+')':'')):chip('n','arb off');
+ const ncT=f.news_cut==null?chip('n','news cut ?'):f.news_cut?chip('g','news cut ON'+(f.news_cut_mult!=null?' '+f.news_cut_mult+'x':'')):chip('n','news cut off');
+ $('bot').innerHTML=`<div class="kv">
+  <span>bot</span><span>${run} <span class="mut">${esc(p.why||'')}</span></span>
+  <span>mode</span><span>${mode} <span class="mut">${esc(p.mode_source||'')}</span></span>
+  <span>size / max loss</span><span>${p.size!=null?'<b>'+p.size+'</b> of each limit':unk} &nbsp;/&nbsp; ${p.max_loss!=null?'<b>'+money(p.max_loss)+'</b>':unk}${p.model?' &nbsp; <span class="mut">model '+esc(p.model)+'</span>':''}</span>
+  <span>flags</span><span>${arbT}${ncT}${f.freeze_seconds!=null?chip('n','freeze '+f.freeze_seconds+' s'):''}${f.leg3===false?chip('y','leg 3 off'):''}${f.nowcast==='site'?chip('g','nowcast: site'):f.nowcast?chip('n','nowcast: '+esc(f.nowcast)):''}${f.futures&&f.futures!=='nn40'?chip('g','futures: '+esc(f.futures)):''}</span>
+  <span>quotes</span><span>${p.quotes_stale?chip('r','STALE '+(p.quote_age!=null?Math.round(p.quote_age)+' s':'')+': not trading'):chip('g','flowing')}${p.ack_symbols?'<span class="mut"> ack listed '+p.ack_symbols.length+' symbols</span>':''}</span>
+  <span>halt</span><span>${p.halted?chip('r','HALTED (max loss): flat, no new entries'):chip('g','not halted')}</span>
+  <span>freeze</span><span>${fz.active?chip('y','FREEZE ON')+esc((fz.symbols||[]).join(', '))+' &middot; '+Math.round(fz.seconds_left||0)+' s left <span class="mut">('+esc(fz.source||'')+')</span>':chip('n','none')}</span>
+  <span>overrides</span><span>${p.paused?chip('y','PAUSED'):chip('n','not paused')}${(p.flatten||[]).length?chip('y','FLATTEN '+esc(p.flatten.join(',')))+'':''}${p.overrides_ok===false?chip('r','overrides unreadable, using last good'):''}${p.step_errors>=3?chip('r','STEP ERRORS x'+p.step_errors):''}</span>
+  <span>where</span><span>season <b>${p.season??'-'}</b> round <b>${p.round??'-'}</b> phase <b>${esc(p.phase??'-')}</b> storm age <b>${p.storm_age!=null?Math.round(p.storm_age)+' s':'-'}</b>${p.step_secs!=null?' &nbsp;<span class="mut">step '+p.step_secs+' s, feed lag '+(p.feed_lag??'-')+' s</span>':''}</span>
+  <span>order actions / min</span><span><b>${r.per_min}</b> of team ${r.team_budget} <span class="mut">(bot limiter ${r.bot_budget})</span><div class="rbar"><i style="width:${pctUsed}%;background:${col}"></i></div></span></div>`+
+  (p.status_file?'':'<div class="mut" style="margin-top:6px">No state/bot_status.json yet: the running bot predates the status hook (docs/DASHBOARD.md). Size, max loss and flags show as unknown; heartbeat, mode, arb, halt and freeze are derived from existing files.</div>');}
+function renderArb(){const a=S.arb;if(!a)return;
+ if(!a.on){const led=Object.keys(a.stale_ledger||{}).length;
+  $('arb').innerHTML=`<div>${chip('n','arb off')} <span class="mut">${esc(a.why||'')}</span></div>`+(a.last_log?`<div class="mut">newest arb log is ${esc(a.last_log)}, from an earlier run: ignored</div>`:'')+
+   (led?`<div style="margin-top:4px">${chip('y','note')}state/etf_arb_book.json still holds a ledger <code>${esc(JSON.stringify(a.stale_ledger))}</code>: a bot restarted with --etf-arb would load it.</div>`:'');return}
+ const row=(k,l)=>`<tr><td>${l}</td><td>${a.season[k]}</td><td>${a.run[k]}</td></tr>`;
+ const cr=a.kind==='create/redeem';
+ const streaks=Object.entries(a.repair_streaks||{}).map(([k,v])=>`<span class="chip ${v>=3?'r':'y'}">${esc(k)} repair streak ${v}</span>`).join('');
+ const led=Object.entries(a.ledger||{}).map(([k,v])=>`${esc(k)} ${v>0?'+':''}${v}`).join(', ')||'flat';
+ $('arb').innerHTML=(a.alerts||[]).map(x=>`<div class="al ${x.level}" style="margin-bottom:6px">${esc(x.msg)}</div>`).join('')+
+  `<div>${chip('g','ARB ON')} ${esc(a.kind)} <span class="mut">${esc(a.log)} &middot; last event ${a.last_event_age_s==null?'-':Math.round(a.last_event_age_s)+' s ago'}${a.truncated?' &middot; counts cover the last 512 KB only':''}</span></div>
+  <table class="mini"><tr><th></th><th>this season</th><th>this run</th></tr>${row('packages','packages sent')}${row('failed','packages failed')}${row('repairs','repairs')}
+  ${cr?row('creates','creates')+row('redeems','redeems')+row('cr_failed','create/redeem refused'):''}${row('legs_not_sent','legs_not_sent')}
+  <tr><td>locked edge ($, at send)</td><td>${money(a.season.locked_edge)}</td><td>${money(a.run.locked_edge)}</td></tr></table>
+  <div style="margin-top:4px">${streaks}${(a.disabled||[]).map(x=>chip('r',esc(x)+' disabled for the season')).join('')}</div>
+  <div>arb ledger: <b>${led}</b></div>`+(Object.keys(a.skips||{}).length?`<div class="mut">skipping: ${Object.entries(a.skips).map(([k,v])=>esc(k)+': '+esc(v)).join(' | ')}</div>`:'');}
+function renderNC(){const n=S.news_cut;if(!n)return;
+ const st=n.state==='on'?chip('g','news cut ON'):n.state==='off'?chip('n','news cut off'):chip('n','news cut ?');
+ $('nc').innerHTML=`<div>${st} <span class="mut">${esc(n.note)}</span></div>`+(n.armed_on.length?`<div>${chip('y','armed')}${esc(n.armed_on.join(', '))} (frozen by the announcement)</div>`:'')+
+  (n.count?`<div class="mut">${n.count} cut(s) in ${esc(n.log||'')}</div><table class="mini"><tr><th>time</th><th>sym</th><th>plan</th><th>position</th><th>fair / mid</th><th>gap vs thr</th></tr>`+
+   n.recent.map(c=>`<tr><td>${esc(c.ts.slice(11))}</td><td>${esc(c.symbol)}</td><td>${esc(c.who)}</td><td>${c.position>0?'+':''}${c.position} to 0</td><td>${fx(c.fair)} / ${fx(c.mid)}</td><td>${fx(c.gap)} / ${fx(c.threshold)}</td></tr>`).join('')+'</table>':'');}
+function renderComp(){const c=S.components;if(!c)return;
+ if(!c.rows.length){$('comp').innerHTML=`<span class="mut">${esc(c.note||'no fills yet')}</span>`;return}
+ const cl=v=>v<0?'neg':v>0?'pos':'';
+ $('comp').innerHTML=`<table class="mini"><tr><th>component</th><th>fills</th><th>shares</th><th>spread paid $</th><th>60 s markout $</th></tr>`+
+  c.rows.map(r=>`<tr><td>${esc(r.label)}</td><td>${r.fills}</td><td>${r.shares}</td><td>${money(-r.spread_cost)}</td><td class="${cl(r.markout60)}">${money(r.markout60)}</td></tr>`).join('')+
+  `</table><div class="mut" style="font-size:11px;margin-top:4px">${esc(c.note)}</div>`;}
+function renderKnobs(){const k=S.knobs;if(!k)return;
+ $('knobs').innerHTML='<table class="mini">'+k.items.map(i=>`<tr><td>${esc(i.name)}</td><td><input disabled value="${i.value==null?'unknown':esc(i.value)}" style="width:90px"></td><td class="mut" style="text-align:left">${esc(i.meaning)} <i>(${esc(i.source)})</i></td></tr>`).join('')+`</table><div class="mut" style="font-size:11px;margin-top:4px">${esc(k.note)}</div>`;}
+function renderCtl(){const o=S.overrides.data||{},fl=o.flatten||[];const cs=$('csym');
+ if(!cs.options.length){for(const x of ['ALL','ARB',...S.symbols_list])cs.add(new Option(x,x));}
+ if(sel&&cs.dataset.syncedto!=sel){cs.value=sel;cs.dataset.syncedto=sel}
+ $('cpause').disabled=!!o.pause;$('cresume').disabled=!o.pause;
+ $('flatchips').innerHTML=fl.length?'flattening: '+fl.map(x=>`<span class="xchip">${esc(x)}<a title="unflatten ${esc(x)}" onclick="ctlAsk('Stop flattening ${esc(x)}?',{cmd:'unflatten',symbols:['${esc(x)}']})">x</a></span>`).join(''):'not flattening anything';}
+function ctlAsk(q,body){modal(`<h2>${esc(q)}</h2><div class="mut">Writes only overrides.json, through scripts/ctl.py (same lock and checks as announce.py). The bot picks it up on its next step, about 2 s.</div>
+ <div class="flex" style="margin-top:10px"><button class="danger" id="cmyes">Confirm</button><button onclick="closeModal()">Cancel</button></div><div class="err" id="merr"></div>`);
+ $('cmyes').onclick=async()=>{const r=await fetch('/api/ctl',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...body,confirm:true})});const j=await r.json();
+  if(!j.ok){$('merr').textContent='REJECTED, nothing written: '+j.error;return}closeModal();tick()}}
+$('cflat').onclick=()=>{const s=$('csym').value;ctlAsk(s==='ALL'?'Flatten ALL positions (and the arb)?':s==='ARB'?'Unwind the ETF arb only?':'Flatten '+s+' (adds to the flatten list)?',{cmd:'flatten',symbols:[s]})};
+$('cunflat').onclick=()=>{const s=$('csym').value;ctlAsk('Stop flattening '+s+'?',{cmd:'unflatten',symbols:[s]})};
+$('cflatarb').onclick=()=>ctlAsk('Unwind the ETF arb packages only? Legs 1 and 3 are not touched.',{cmd:'flatten',symbols:['ARB']});
+$('cunflatall').onclick=()=>ctlAsk('Clear the whole flatten list?',{cmd:'unflatten',symbols:[]});
+$('cpause').onclick=()=>ctlAsk('Pause the bot (cancels resting orders, sends nothing)?',{cmd:'pause'});
+$('cresume').onclick=()=>ctlAsk('Resume trading (clears pause)?',{cmd:'resume'});
+async function explain(){const text=$('exin').value.trim();$('exerr').textContent='';
+ try{const r=await fetch('/api/explain',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});const j=await r.json();
+  if(!j.ok){$('exerr').textContent='REJECTED, nothing written: '+j.error;return}$('exout').className='';$('exout').textContent=j.text}catch(e){$('exerr').textContent='request failed: '+e}}
+$('exgo').onclick=explain;$('exin').addEventListener('keydown',e=>{if(e.key==='Enter')explain()});
+let thinkSym=null,thinkBusy=false;
+async function thinkTick(){if(!sel||thinkBusy)return;thinkBusy=true;try{const r=await fetch('/api/think?symbol='+sel);const j=await r.json();if(j.ok===false)return;$('thinksym').textContent=sel;renderThink(j)}catch(e){}finally{thinkBusy=false}}
+function renderThink(j){const pts=j.points||[],tl=j.timeline;if(!tl||pts.length<2){$('think').innerHTML='<span class="mut">no rows for this round yet</span>';return}
+ const W=640,H=190,L=44,R=8,T=8,B=20;const xmax=Math.max(tl.exit_age,tl.age||0)*1.0;
+ const x=a=>L+(a/xmax)*(W-L-R);
+ const ys=pts.flatMap(p=>[p[1],p[2],p[4]]).filter(v=>v!=null);let lo=Math.min(...ys),hi=Math.max(...ys);if(hi-lo<0.02){lo-=0.01;hi+=0.01}const pad=(hi-lo)*0.08;lo-=pad;hi+=pad;
+ const y=v=>T+(1-(v-lo)/(hi-lo))*(H-T-B);
+ const line=(i,c,w)=>'<path fill="none" stroke="'+c+'" stroke-width="'+w+'" d="'+pts.filter(p=>p[i]!=null).map((p,k)=>(k?'L':'M')+x(p[0]).toFixed(1)+' '+y(p[i]).toFixed(1)).join('')+'"/>';
+ const band=pts.filter(p=>p[1]!=null&&p[2]!=null);const bandPath=band.map((p,k)=>(k?'L':'M')+x(p[0]).toFixed(1)+' '+y(p[2]).toFixed(1)).join('')+band.slice().reverse().map(p=>'L'+x(p[0]).toFixed(1)+' '+y(p[1]).toFixed(1)).join('')+'Z';
+ let g=`<rect x="${x(tl.entry_start)}" y="${T}" width="${x(tl.entry_end)-x(tl.entry_start)}" height="${H-T-B}" fill="#2ea04322"/>`+
+  `<line x1="${x(tl.exit_age)}" x2="${x(tl.exit_age)}" y1="${T}" y2="${H-B}" stroke="#6e7681" stroke-dasharray="3 3"/>`+
+  `<path d="${bandPath}" fill="#9aa5b133" stroke="none"/>`+line(3,'#9aa5b1',1.2)+line(4,'#4c9aff',1.8);
+ for(let k=0;k<=4;k++){const v=lo+(hi-lo)*k/4;g+=`<text x="2" y="${y(v)+3}" fill="#7d8896" font-size="9">${v.toFixed(2)}</text>`}
+ for(const a of [0,100,200,300,400]){if(a<=xmax)g+=`<text x="${x(a)-6}" y="${H-6}" fill="#7d8896" font-size="9">${a}s</text>`}
+ for(const m of j.marks||[]){const c=m.kind==='announcement'?'#d97bff':m.kind==='buy'?'#2ea043':m.kind==='sell'?'#e5534b':'#d4a72c';
+  if(m.kind==='announcement')g+=`<line x1="${x(m.age)}" x2="${x(m.age)}" y1="${T}" y2="${H-B}" stroke="${c}" stroke-width="2"><title>${esc(m.text)}</title></line>`;
+  else{const mp=pts.reduce((b,p)=>Math.abs(p[0]-m.age)<Math.abs(b[0]-m.age)?p:b);const yy=y(mp[3]??mp[4]);g+=`<circle cx="${x(m.age)}" cy="${yy}" r="3.5" fill="${c}"><title>${esc(m.text)}</title></circle>`}}
+ g+=`<line x1="${x(tl.age)}" x2="${x(tl.age)}" y1="${T}" y2="${H-B}" stroke="#fff" stroke-width="1.5"/>`;
+ const seg=(a,b,c,t)=>`<div style="width:${(b-a)/xmax*100}%;background:${c}">${t}</div>`;
+ const last=pts[pts.length-1];
+ $('think').innerHTML=`<svg viewBox="0 0 ${W} ${H}">${g}</svg>
+  <div class="mut" style="font-size:11px">blue = fair value, grey = house mid with bid/ask band, green shading = entry window ${tl.entry_start}-${tl.entry_end}s, dashed = flatten age ${tl.exit_age}s, white = now, dots = our orders, purple = announcement</div>
+  <div class="tl">${seg(0,tl.entry_start,'#6e7681','wait')}${seg(tl.entry_start,tl.entry_end,'#2ea043','entry window')}${seg(tl.entry_end,tl.exit_age,'#d4a72c','hold')}<i style="left:${Math.min(100,(tl.age||0)/xmax*100)}%"></i></div>
+  <div>round ${tl.round}, storm age <b>${tl.age}s</b> (${esc(tl.phase)}): <b>${esc(tl.segment)}</b> &middot; fair ${fx(last[4])} vs mid ${fx(last[3])} (gap ${fx(last[4]-last[3],3)}${j.threshold!=null?', threshold '+fx(j.threshold,3):''}) &middot; position ${last[5]??'-'}</div>`;}
+async function post(path,body){$('err').textContent='';
+ try{const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const j=await r.json();
+  if(!j.ok){$('err').textContent='REJECTED, nothing written: '+j.error;return false}return true;}catch(e){$('err').textContent='request failed: '+e;return false}}
+async function ack(seq){await post('/api/ack',{seq});tick()}
+$('bapply').onclick=async()=>{if(await post('/api/bump',{symbol:$('bsym').value,mode:$('bmode').value,value:$('bval').value}))tick()};
+$('bclear').onclick=async()=>{if(await post('/api/clear',{symbol:$('bsym').value}))tick()};
+$('bclearall').onclick=async()=>{if(await post('/api/clear',{}))tick()};
+function ask(q,fn){pend=fn;$('cq').textContent=q;$('confirm').style.display='inline'}
+$('cno').onclick=()=>{pend=null;$('confirm').style.display='none'};
+$('cyes').onclick=async()=>{const f=pend;pend=null;$('confirm').style.display='none';if(f&&await f())tick()};
+$('pause').onclick=()=>{const on=!((S.overrides.data||{}).pause);ask(on?'Pause the bot (cancels resting orders)?':'Resume trading?',()=>post('/api/pause',{on,confirm:true}))};
+$('flat').onclick=()=>ask('Flatten ALL positions?',()=>post('/api/flatten',{symbols:['ALL'],confirm:true}));
+let autochk=false;
+async function tick(){try{const r=await fetch('/api/state');S=await r.json();render();if(!autochk&&!S.checks.at&&!S.checks.running){autochk=true;fetch('/api/checks',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})}}catch(e){$('hd').innerHTML='<span class="status bad">dashboard server unreachable</span>'}}
+tick();setInterval(tick,2000);
+</script></body></html>
