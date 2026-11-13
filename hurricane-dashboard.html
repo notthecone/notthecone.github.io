@@ -1,8 +1,9 @@
 <!doctype html><html><head><script>
 (function(){
+  if(/[?&]embed=1/.test(location.search)) document.documentElement.classList.add('embed');
   const realFetch=window.fetch.bind(window), realNow=Date.now.bind(Date);
   let R=null,i=0,playing=true,speed=1,frameStart=realNow();
-  const ready=realFetch('dash-replay.json').then(r=>r.json()).then(j=>{R=j;build();show();});
+  const ready=realFetch('dash-replay.json').then(r=>r.json()).then(j=>{R=j; const f0=R.frames.findIndex(f=>f.state&&f.state.symbols&&f.state.symbols.length&&f.state.meta&&f.state.meta.phase==='storm'); i=f0>0?Math.min(R.frames.length-1,f0+3):0; frameStart=realNow(); build(); show(); refresh();});
   Date.now=()=>R?R.frames[i].at*1000+Math.min(R.every*1000,(realNow()-frameStart)*speed):realNow();
   const resp=o=>new Response(JSON.stringify(o),{status:200,headers:{'Content-Type':'application/json'}});
   window.fetch=async(url,opt)=>{ const u=String(url&&url.url||url);
@@ -18,7 +19,7 @@
   function build(){ bar=document.createElement('div'); bar.id='replaybar';
     bar.innerHTML='<button type="button" id="rp-play" title="Play or pause">❚❚</button><input id="rp-rng" type="range" min="0" value="0"><span id="rp-lab"></span><button type="button" id="rp-speed">1×</button><a href="index.html#projects/hurricane" id="rp-back">← Connie’s site</a><span id="rp-note">Real bot + real dashboard, holdout season 10 on our mock exchange, 4× speed · read-only</span>';
     document.body.appendChild(bar); const st=document.createElement('style');
-    st.textContent='#replaybar{position:fixed;left:0;right:0;bottom:0;z-index:99999;display:flex;align-items:center;gap:12px;padding:10px 16px;background:rgba(12,12,14,.96);border-top:1px solid #2a2a30;font:12px ui-monospace,Menlo,monospace;color:#c9c5bd}#replaybar button{all:unset;cursor:pointer;border:1px solid #3a3a42;border-radius:999px;padding:4px 12px;color:#ece9e3}#replaybar button:hover{border-color:#e9a54a;color:#e9a54a}#rp-rng{flex:1;accent-color:#e9a54a}#rp-note{color:#8f8b84}#rp-back{color:#ece9e3;text-decoration:none;border-bottom:1px solid #55524d;white-space:nowrap}#rp-back:hover{color:#e9a54a}body{padding-bottom:56px!important}@media(max-width:700px){#rp-note{display:none}}';
+    st.textContent='#replaybar{position:fixed;left:0;right:0;bottom:0;z-index:99999;display:flex;align-items:center;gap:12px;padding:10px 16px;background:rgba(12,12,14,.96);border-top:1px solid #2a2a30;font:12px ui-monospace,Menlo,monospace;color:#c9c5bd}#replaybar button{all:unset;cursor:pointer;border:1px solid #3a3a42;border-radius:999px;padding:4px 12px;color:#ece9e3}#replaybar button:hover{border-color:#e9a54a;color:#e9a54a}#rp-rng{flex:1;accent-color:#e9a54a}#rp-note{color:#8f8b84}#rp-back{color:#ece9e3;text-decoration:none;border-bottom:1px solid #55524d;white-space:nowrap}#rp-back:hover{color:#e9a54a}html.embed #rp-back{display:none}body{padding-bottom:56px!important}@media(max-width:700px){#rp-note{display:none}}';
     document.head.appendChild(st); rng=bar.querySelector('#rp-rng'); lab=bar.querySelector('#rp-lab'); pb=bar.querySelector('#rp-play'); sb=bar.querySelector('#rp-speed'); rng.max=R.frames.length-1;
     rng.oninput=()=>{ i=+rng.value; frameStart=realNow(); show(); refresh(); };
     pb.onclick=()=>{ playing=!playing; pb.textContent=playing?'❚❚':'▶'; };
