@@ -231,7 +231,7 @@ function openLB(i){ const p=P[i]; $('#lb img').src=p.src; $('#lb h3').textConten
 let lastAct=-1e9, touring=false, tourNext=0, tourHops=0;
 function userActed(){ lastAct=performance.now(); if(touring){ touring=false; $('#status').innerHTML=''; } }
 addEventListener('pointermove',e=>{ if(e.buttons) userActed(); });
-const HERO_ORDER=P.map((p,i)=>i).filter(i=>P[i].tier==='hero'); const tourSeen=new Set(); const tierScore=i=>P[i].tier==='hero'?3:P[i].tier==='site'?2:1;
+const HERO_ORDER=P.map((p,i)=>i).filter(i=>P[i].tier==='hero').sort((a,b)=>(P[a].rank||99)-(P[b].rank||99)); const tourSeen=new Set(); const tierScore=i=>P[i].tier==='hero'?3:P[i].tier==='site'?2:1;
 function tourStep(now){ if($('#lb').classList.contains('open')||$('#coach').classList.contains('on')){ lastAct=now; return; } if(!touring){ if(mode==='map'&&arrange==='grid'){ lastAct=now; return; } if(now-lastAct>3000){ touring=true; tourHops=0; tourNext=now; $('#status').innerHTML='<b>●</b> touring the best shots · click or drag to take over'; } return; }
   if(now<tourNext) return;
   const nextHero=()=>HERO_ORDER.find(i=>active.has(i)&&!tourSeen.has(i));
@@ -240,7 +240,7 @@ function tourStep(now){ if($('#lb').classList.contains('open')||$('#coach').clas
   tourSeen.add(focal);
   // follow links toward strong, unseen photos; after a few hops, fly to the next best shot
   const cand=nbrs(focal).filter(j=>!tourSeen.has(j)).sort((a,b)=>(tierScore(b)*2+S[focal][b])-(tierScore(a)*2+S[focal][a]));
-  if(tourHops>=4||!cand.length||tierScore(cand[0])<2){ const h=nextHero(); if(h==null){ tourSeen.clear(); zoomOut(true); tourNext=now+3750; return; } go(h); tourHops=0; tourNext=now+4500; return; }
+  if(tourHops>=2||!cand.length||tierScore(cand[0])<2){ const h=nextHero(); if(h==null){ tourSeen.clear(); zoomOut(true); tourNext=now+3750; return; } go(h); tourHops=0; tourNext=now+4500; return; }
   go(cand[0]); tourHops++; tourNext=now+3750; }
 
 /* ---------- render ---------- */
